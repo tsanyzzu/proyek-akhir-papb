@@ -3,45 +3,24 @@ package com.kelompok4.serena
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.kelompok4.serena.ui.theme.ProyekakhirpapbTheme
+import androidx.navigation.compose.rememberNavController
+import com.kelompok4.serena.ui.navigation.RootNavGraph
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            ProyekakhirpapbTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            val navController = rememberNavController()
+
+            // Misal status disimpan di SharedPreferences / DataStore
+            val isFirstTime = true   // contoh dummy
+            val isLoggedIn = false   // contoh dummy
+
+            RootNavGraph(
+                navController = navController,
+                isFirstTime = isFirstTime,
+                isLoggedIn = isLoggedIn
+            )
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ProyekakhirpapbTheme {
-        Greeting("Android")
     }
 }
