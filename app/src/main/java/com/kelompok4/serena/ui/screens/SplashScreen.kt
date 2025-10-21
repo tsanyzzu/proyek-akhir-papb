@@ -17,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.kelompok4.serena.R
 import kotlinx.coroutines.delay
+import com.kelompok4.serena.ui.theme.*
 
 @Composable
 fun SplashScreen(
@@ -27,7 +28,8 @@ fun SplashScreen(
     var backgroundIsWhite by remember { mutableStateOf(false) }
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (backgroundIsWhite) Color.White else Color(0xFF368743),
+        // Ganti nilai Color() dengan variabel dari design system
+        targetValue = if (backgroundIsWhite) Color.White else Primary500,
         label = "backgroundColor"
     )
 

@@ -8,34 +8,44 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
+// Skema warna untuk Dark Mode
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Primary300,
+    secondary = Secondary300,      // Menggunakan varian secondary yang lebih terang
+    tertiary = TertiaryBlue300,    // Menggunakan varian tertiary yang lebih terang
+    background = Primary900,
+    surface = Primary900,
+    error = TertiaryRed300,        // Warna error untuk dark mode
+    onPrimary = Color.Black,
+    onSecondary = Color.Black,
+    onTertiary = Color.Black,
+    onBackground = Primary50,
+    onSurface = Primary50,
+    onError = Color.Black
 )
 
+// Skema warna untuk Light Mode
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = Primary500,
+    secondary = Secondary500,
+    tertiary = TertiaryBlue500,
+    background = Color.White,
+    surface = Primary50,
+    error = TertiaryRed500,        // Warna error untuk light mode
     onPrimary = Color.White,
-    onSecondary = Color.White,
+    onSecondary = Color.Black,     // Teks hitam di atas warna secondary (kuning)
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    onBackground = Color.Black,
+    onSurface = Color.Black,
+    onError = Color.White
 )
 
 @Composable
 fun ProyekakhirpapbTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
