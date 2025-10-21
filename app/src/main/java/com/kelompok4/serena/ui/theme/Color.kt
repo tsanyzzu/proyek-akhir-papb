@@ -36,3 +36,6 @@ val TertiaryRed500 = Color(0xFFEE6161)
 val TertiaryRed600 = Color(0xFFD95858)
 val TertiaryRed700 = Color(0xFFA94545)
 val TertiaryRed900 = Color(0xFF642929)
+
+val DisabledGray = Color(0xFFE4E4E7)
+val DisabledTextGray = Color(0xFF71717A)
