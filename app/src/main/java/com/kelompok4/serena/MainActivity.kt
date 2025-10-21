@@ -1,4 +1,4 @@
-package com.example.proyek_akhir_papb
+package com.kelompok4.serena
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.proyek_akhir_papb.ui.theme.ProyekakhirpapbTheme
+import com.kelompok4.serena.ui.theme.ProyekakhirpapbTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package com.example.proyek_akhir_papb
+package com.kelompok4.serena
 
 import org.junit.Test
 

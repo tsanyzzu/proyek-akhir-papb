@@ -1,4 +1,4 @@
-package com.example.proyek_akhir_papb.ui.theme
+package com.kelompok4.serena.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

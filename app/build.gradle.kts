@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.proyek_akhir_papb"
+    namespace = "com.kelompok4.serena"
     compileSdk = 36
 
     defaultConfig {

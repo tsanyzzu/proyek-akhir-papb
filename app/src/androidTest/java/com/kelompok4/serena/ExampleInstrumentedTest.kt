@@ -1,4 +1,4 @@
-package com.example.proyek_akhir_papb
+package com.kelompok4.serena
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

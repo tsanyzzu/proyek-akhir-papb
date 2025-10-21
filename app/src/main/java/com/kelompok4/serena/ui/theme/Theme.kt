@@ -1,6 +1,5 @@
-package com.example.proyek_akhir_papb.ui.theme
+package com.kelompok4.serena.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
