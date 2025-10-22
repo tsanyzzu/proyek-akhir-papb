@@ -1,9 +1,12 @@
 package com.kelompok4.serena.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -178,18 +181,31 @@ fun PageIndicator(
         verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(totalPages) { index ->
+            // Animasi untuk lebar indikator
+            val animatedWidth by animateDpAsState(
+                targetValue = if (index == currentPage) 24.dp else 8.dp,
+                animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+                label = "indicatorWidth"
+            )
+
+            // Animasi untuk warna indikator
+            val animatedColor by animateColorAsState(
+                targetValue = if (index == currentPage) Primary500 else Color.Gray.copy(alpha = 0.3f),
+                animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
+                label = "indicatorColor"
+            )
+
             Box(
                 modifier = Modifier
-                    .width(if (index == currentPage) 24.dp else 8.dp)
+                    .width(animatedWidth)
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(
-                        if (index == currentPage) Primary500 else Color.Gray.copy(alpha = 0.3f)
-                    )
+                    .background(animatedColor)
             )
         }
     }
 }
+
 
 data class OnboardingData(
     val image: Int,
