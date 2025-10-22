@@ -25,10 +25,19 @@ import com.kelompok4.serena.ui.components.AppButton
 import com.kelompok4.serena.ui.components.ButtonType
 import com.kelompok4.serena.ui.theme.*
 
+/**
+ * Halaman Onboarding — menampilkan serangkaian layar pengenalan aplikasi
+ * sebelum pengguna memulai atau login ke aplikasi utama.
+ *
+ * @param onFinish Callback yang dipanggil ketika pengguna menyelesaikan onboarding
+ * (baik dengan menekan tombol "Lewati" atau "Mulai Sekarang").
+ */
 @Composable
 fun OnboardingScreen(onFinish: () -> Unit) {
+    // Menyimpan indeks halaman onboarding yang sedang ditampilkan
     var currentPage by remember { mutableIntStateOf(0) }
-    
+
+    // Data konten untuk setiap halaman onboarding
     val onboardingData = listOf(
         OnboardingData(
             image = R.drawable.onboarding_1,
@@ -47,8 +56,9 @@ fun OnboardingScreen(onFinish: () -> Unit) {
         )
     )
 
+    // Container utama layar onboarding
     Box(modifier = Modifier.fillMaxSize()) {
-        // Background dengan wave hijau
+        // Bagian background gradient hijau di atas
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -59,11 +69,11 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     )
                 )
         )
-        
+
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Skip Button
+            /** Bagian atas: tombol "Lewati" **/
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -82,15 +92,15 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     )
                 }
             }
-            
-            // Main Content
+
+            /** Konten utama onboarding **/
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Image
+                // Gambar utama untuk setiap halaman onboarding
                 Image(
                     painter = painterResource(id = onboardingData[currentPage].image),
                     contentDescription = null,
@@ -99,28 +109,28 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         .height(300.dp),
                     contentScale = ContentScale.Fit
                 )
-                
+
                 Spacer(modifier = Modifier.height(32.dp))
-                
-                // Page Indicator
+
+                // Indikator halaman (bulatan kecil di bawah gambar)
                 PageIndicator(
                     currentPage = currentPage,
                     totalPages = onboardingData.size
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
-                // Title
+
+                // Judul halaman onboarding
                 Text(
                     text = onboardingData[currentPage].title,
                     style = AppTypography.H3.bold,
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                // Description
+
+                // Deskripsi penjelasan tiap fitur
                 Text(
                     text = onboardingData[currentPage].description,
                     style = AppTypography.Body1.regular,
@@ -128,10 +138,10 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     textAlign = TextAlign.Center,
                     lineHeight = 24.sp
                 )
-                
+
                 Spacer(modifier = Modifier.weight(1f))
-                
-                // Navigation Buttons
+
+                /** Tombol navigasi bawah (Kembali & Lanjutkan/Mulai Sekarang) **/
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -142,6 +152,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                         Arrangement.SpaceBetween
                     }
                 ) {
+                    // Tombol kembali (tidak tampil di halaman pertama)
                     if (currentPage > 0) {
                         AppButton(
                             text = "Kembali",
@@ -149,15 +160,16 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                             modifier = Modifier.weight(1f),
                             buttonType = ButtonType.SECONDARY
                         )
-                        
+
                         Spacer(modifier = Modifier.width(16.dp))
                     }
-                    
+
+                    // Tombol lanjut / selesai
                     AppButton(
                         text = if (currentPage == onboardingData.size - 1) "Mulai Sekarang" else "Lanjutkan",
                         onClick = {
                             if (currentPage == onboardingData.size - 1) {
-                                onFinish()
+                                onFinish() // Panggil callback jika sudah di halaman terakhir
                             } else {
                                 currentPage++
                             }
@@ -171,6 +183,15 @@ fun OnboardingScreen(onFinish: () -> Unit) {
     }
 }
 
+/**
+ * Komponen indikator halaman (bulatan yang menunjukkan posisi halaman aktif).
+ *
+ * Indikator aktif akan memiliki warna dan ukuran yang dianimasikan agar
+ * perubahan halaman terasa lebih lembut.
+ *
+ * @param currentPage Indeks halaman onboarding yang sedang aktif.
+ * @param totalPages Jumlah total halaman onboarding.
+ */
 @Composable
 fun PageIndicator(
     currentPage: Int,
@@ -181,14 +202,14 @@ fun PageIndicator(
         verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(totalPages) { index ->
-            // Animasi untuk lebar indikator
+            // Animasi untuk lebar indikator (aktif lebih panjang)
             val animatedWidth by animateDpAsState(
                 targetValue = if (index == currentPage) 24.dp else 8.dp,
                 animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
                 label = "indicatorWidth"
             )
 
-            // Animasi untuk warna indikator
+            // Animasi untuk warna indikator (aktif berwarna hijau)
             val animatedColor by animateColorAsState(
                 targetValue = if (index == currentPage) Primary500 else Color.Gray.copy(alpha = 0.3f),
                 animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
@@ -206,7 +227,13 @@ fun PageIndicator(
     }
 }
 
-
+/**
+ * Data class yang merepresentasikan satu halaman onboarding.
+ *
+ * @param image Gambar yang ditampilkan pada halaman onboarding.
+ * @param title Judul dari halaman onboarding.
+ * @param description Deskripsi atau penjelasan dari halaman tersebut.
+ */
 data class OnboardingData(
     val image: Int,
     val title: String,
