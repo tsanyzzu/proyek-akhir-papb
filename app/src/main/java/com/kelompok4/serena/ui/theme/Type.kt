@@ -2,18 +2,12 @@ package com.kelompok4.serena.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.kelompok4.serena.R
 
-// 1. Definisikan Font Family SF Pro Display
-val SFProDisplay = FontFamily(
-    Font(R.font.sf_pro_display_regular, FontWeight.Normal), // Regular
-    Font(R.font.sf_pro_display_medium, FontWeight.Medium),  // Medium
-    Font(R.font.sf_pro_display_bold, FontWeight.Bold)      // Bold
-)
+// 1. Definisikan Font Family SF Pro Display dengan fallback ke default
+val SFProDisplay = FontFamily.Default
 
 // 2. Buat data class untuk menampung tiga weight untuk setiap style
 data class AppTextStyle(
@@ -72,14 +66,4 @@ object AppTypography {
 }
 
 // 4. Atur default Typography untuk MaterialTheme agar sesuai dengan design system
-val Typography = Typography(
-    bodyLarge = AppTypography.Body1.regular,
-    headlineLarge = AppTypography.H1.regular,
-    headlineMedium = AppTypography.H2.regular,
-    headlineSmall = AppTypography.H3.regular,
-    titleLarge = AppTypography.H4.regular,
-    titleMedium = AppTypography.H5.regular,
-    titleSmall = AppTypography.H6.regular,
-    bodyMedium = AppTypography.Subtitle2.regular,
-    labelLarge = AppTypography.Button.medium
-)
+val Typography = Typography()
