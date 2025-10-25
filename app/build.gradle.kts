@@ -40,8 +40,9 @@ android {
 }
 
 dependencies {
-    implementation("androidx.navigation:navigation-compose:2.8.3")
-    implementation("androidx.compose.animation:animation:1.7.3")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.animation)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

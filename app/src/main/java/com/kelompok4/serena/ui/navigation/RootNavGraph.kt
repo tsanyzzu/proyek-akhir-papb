@@ -44,7 +44,19 @@ fun RootNavGraph(
             )
         }
 
-        composable(Routes.LOGIN) { LoginScreen() }
+        composable(Routes.LOGIN) {
+            LoginScreen(
+                onNavigateToRegister = {
+                    navController.navigate(Routes.REGISTER)
+                }
+            )
+        }
+
+        composable(Routes.REGISTER) {
+            RegisterScreen(navController = navController)
+        }
+
+
         composable(Routes.HOME) { HomeScreen() }
     }
 }

@@ -39,3 +39,5 @@ val TertiaryRed900 = Color(0xFF642929)
 
 val DisabledGray = Color(0xFFE4E4E7)
 val DisabledTextGray = Color(0xFF71717A)
+
+val GrayText = Color(0xFF9396A0)
