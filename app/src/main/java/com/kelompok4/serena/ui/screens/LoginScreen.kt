@@ -60,11 +60,11 @@ fun LoginScreen(
                     Image(
                         painter = painterResource(id = R.drawable.serena_logo),
                         contentDescription = "Logo",
-                        modifier = Modifier.size(80.dp)
+                        modifier = Modifier.size(100.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "Selamat Datang!",
@@ -90,7 +90,7 @@ fun LoginScreen(
                     shape = RoundedCornerShape(8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Password Field
                 OutlinedTextField(
@@ -118,7 +118,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Forgot Password
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -141,7 +141,7 @@ fun LoginScreen(
                     enabled = email.isNotBlank() && password.isNotBlank()
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(56.dp))
 
                 // Garis kiri-kanan + "Atau masuk dengan"
                 Row(
@@ -167,7 +167,7 @@ fun LoginScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -218,7 +218,7 @@ fun LoginScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 32.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(

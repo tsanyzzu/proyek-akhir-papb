@@ -23,6 +23,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,36 +50,38 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 12.dp),
-            horizontalAlignment = Alignment.Start,
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.Start) {
+                Spacer(modifier = Modifier.height(32.dp))
+
                 // Logo
                 Image(
                     painter = painterResource(id = R.drawable.serena_logo),
                     contentDescription = "Logo",
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(100.dp)
                         .align(Alignment.CenterHorizontally)
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Judul dan Subjudul
                 Text("Buat Akun", style = AppTypography.H4.bold, color = Color.Black)
                 Text(
                     "Daftarkan akun Anda untuk mengakses aplikasi",
                     style = AppTypography.Subtitle2.regular,
-                    color = GrayText
+                    color = GrayText,
+                    textAlign = TextAlign.Start
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // ===== Input Fields =====
                 OutlinedTextField(
@@ -90,7 +93,7 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     value = email,
@@ -101,7 +104,7 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     value = password,
@@ -116,7 +119,9 @@ fun RegisterScreen(
                         IconButton(onClick = viewModel::togglePasswordVisibility) {
                             Icon(
                                 painter = painterResource(id = icon),
-                                contentDescription = if (isPasswordVisible) "Sembunyikan Password" else "Tampilkan Password"
+                                contentDescription = if (isPasswordVisible) "Sembunyikan Password" else "Tampilkan Password",
+                                // DIUBAH: Menambahkan ukuran ikon
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     },
@@ -124,7 +129,7 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 OutlinedTextField(
                     value = confirmPassword,
@@ -139,7 +144,9 @@ fun RegisterScreen(
                         IconButton(onClick = viewModel::toggleConfirmPasswordVisibility) {
                             Icon(
                                 painter = painterResource(id = icon),
-                                contentDescription = if (isConfirmPasswordVisible) "Sembunyikan Password" else "Tampilkan Password"
+                                contentDescription = if (isConfirmPasswordVisible) "Sembunyikan Password" else "Tampilkan Password",
+                                // DIUBAH: Menambahkan ukuran ikon
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     },
@@ -147,7 +154,7 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Ketentuan Layanan & Privasi
                 Text(
@@ -159,10 +166,11 @@ fun RegisterScreen(
                         append(" Serena.")
                     },
                     style = AppTypography.Subtitle2.regular,
-                    color = GrayText
+                    color = GrayText,
+                    textAlign = TextAlign.Start
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Tombol Daftar
                 AppButton(
@@ -174,7 +182,7 @@ fun RegisterScreen(
                             password.isNotBlank() && confirmPassword.isNotBlank()
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(56.dp))
 
                 // Divider
                 Row(
@@ -186,7 +194,7 @@ fun RegisterScreen(
                     HorizontalDivider(modifier = Modifier.weight(1f), color = DisabledGray, thickness = 1.dp)
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Sosial Media
                 Row(
@@ -207,7 +215,7 @@ fun RegisterScreen(
 
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(48.dp)
                                 .background(bgColor, CircleShape)
                                 .border(1.dp, DisabledGray.copy(alpha = 0.4f), CircleShape)
                                 .clickable(
@@ -220,12 +228,12 @@ fun RegisterScreen(
                             Image(
                                 painter = painterResource(id = icon),
                                 contentDescription = name,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
 
                         if (index < socialIcons.lastIndex) {
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(16.dp))
                         }
                     }
                 }
@@ -235,17 +243,17 @@ fun RegisterScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 4.dp),
+                    .padding(top = 64.dp), // Mengubah top padding
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
                     text = "Sudah punya akun? ",
-                    style = AppTypography.Subtitle2.regular,
+                    style = AppTypography.Body1.medium,
                     color = GrayText
                 )
                 Text(
                     text = "Masuk",
-                    style = AppTypography.Subtitle2.medium,
+                    style = AppTypography.Body1.medium,
                     color = Primary500,
                     modifier = Modifier.clickable { navController.popBackStack() }
                 )

@@ -74,22 +74,24 @@ fun OnboardingScreen(onFinish: () -> Unit) {
             modifier = Modifier.fillMaxSize()
         ) {
             /** Bagian atas: tombol "Lewati" **/
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = onFinish,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = Primary500
-                    )
+            if (currentPage < onboardingData.size - 1) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text(
-                        text = "Lewati",
-                        style = AppTypography.Subtitle2.medium
-                    )
+                    TextButton(
+                        onClick = onFinish,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Primary500
+                        )
+                    ) {
+                        Text(
+                            text = "Lewati",
+                            style = AppTypography.Subtitle2.medium
+                        )
+                    }
                 }
             }
 
@@ -123,9 +125,9 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                 // Judul halaman onboarding
                 Text(
                     text = onboardingData[currentPage].title,
-                    style = AppTypography.H3.bold,
+                    style = AppTypography.H1.bold,
                     color = Color.Black,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Left
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -135,7 +137,7 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     text = onboardingData[currentPage].description,
                     style = AppTypography.Body1.regular,
                     color = Color.Black.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Left,
                     lineHeight = 24.sp
                 )
 
