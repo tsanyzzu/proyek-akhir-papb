@@ -8,6 +8,8 @@ object Routes {
     const val HOME = "home"
     const val SELF_CARE = "self_care"
     const val KONSELING = "konseling"
-    const val PROFIL = "profil"
-    const val MAIN = "main" // Container untuk bottom navigation
+    const val PROFIL = "profil/{email}"
+    const val MAIN = "main"
+    const val EDIT_VALUE = "edit_value/{email}/{field}" // field: username | fullname | email
+    const val SUCCESS_PROFILE = "success_profile"
 }

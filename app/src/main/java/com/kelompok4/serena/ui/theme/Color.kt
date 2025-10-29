@@ -41,3 +41,5 @@ val DisabledGray = Color(0xFFE4E4E7)
 val DisabledTextGray = Color(0xFF71717A)
 
 val GrayText = Color(0xFF9396A0)
+
+val BaseColor = Color(0xFFF5F5F5)

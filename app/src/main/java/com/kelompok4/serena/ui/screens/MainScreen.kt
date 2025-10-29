@@ -14,10 +14,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.kelompok4.serena.ui.navigation.Routes
 import com.kelompok4.serena.ui.navigation.getAllBottomNavItems
 import com.kelompok4.serena.ui.theme.*
@@ -134,8 +136,24 @@ fun NavigationGraph(
         composable(Routes.KONSELING) {
             KonselingScreen()
         }
-        composable(Routes.PROFIL) {
-            ProfilScreen()
+
+        composable(
+            route = "profil/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            ProfileScreen(navController = navController, userEmail = email)
+        }
+
+        composable("profile_detail/{email}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            ProfileDetailScreen(navController = navController, userEmail = email)
+        }
+
+        composable("edit_value/{email}/{field}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val field = backStackEntry.arguments?.getString("field") ?: ""
+            EditValueScreen(navController = navController, userEmail = email, field = field)
         }
     }
 }
