@@ -40,6 +40,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.material.icons.extended)

@@ -1,33 +1,32 @@
 package com.kelompok4.serena.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.State
+import androidx.lifecycle.ViewModel
+import com.kelompok4.serena.data.User
+import com.kelompok4.serena.data.UserDataManager
 
 class LoginViewModel : ViewModel() {
-    private val _email = mutableStateOf("")
-    val email: State<String> = _email
+    val email = mutableStateOf("")
+    val password = mutableStateOf("")
+    val isPasswordVisible = mutableStateOf(false)
+    val loggedInUser = mutableStateOf<User?>(null)
 
-    private val _password = mutableStateOf("")
-    val password: State<String> = _password
+    fun onEmailChange(value: String) { email.value = value }
+    fun onPasswordChange(value: String) { password.value = value }
+    fun togglePasswordVisibility() { isPasswordVisible.value = !isPasswordVisible.value }
 
-    private val _isPasswordVisible = mutableStateOf(false)
-    val isPasswordVisible: State<Boolean> = _isPasswordVisible
+    fun onLoginClick(context: Context, onSuccess: (User) -> Unit, onError: (String) -> Unit) {
+        val mail = email.value.trim()
+        val pass = password.value
 
-    fun onEmailChange(value: String) {
-        _email.value = value
-    }
-
-    fun onPasswordChange(value: String) {
-        _password.value = value
-    }
-
-    fun togglePasswordVisibility() {
-        _isPasswordVisible.value = !_isPasswordVisible.value
-    }
-
-    fun onLoginClick() {
-        println("Email: ${_email.value}, Password: ${_password.value}")
+        val user = UserDataManager.loginUser(context, mail, pass)
+        if (user != null) {
+            loggedInUser.value = user
+            onSuccess(user)
+        } else {
+            onError("Email atau kata sandi salah.")
+        }
     }
 
     fun onGoogleLogin() {

@@ -58,14 +58,7 @@ fun RootNavGraph(
         }
 
         composable(Routes.REGISTER) {
-            RegisterScreen(
-                navController = navController,
-                onNavigateToMain = {
-                    navController.navigate(Routes.MAIN) {
-                        popUpTo(Routes.REGISTER) { inclusive = true }
-                    }
-                }
-            )
+            RegisterScreen(navController = navController)
         }
 
         composable(Routes.MAIN) {
