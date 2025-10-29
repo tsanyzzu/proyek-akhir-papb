@@ -1,6 +1,7 @@
 package com.kelompok4.serena.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -71,5 +72,8 @@ fun RootNavGraph(
         composable(Routes.MAIN) {
             MainScreen()
         }
+//        composable(Routes.KONSELING) {
+//            CounselingScheduleScreen(navController = navController)
+//        }
     }
 }

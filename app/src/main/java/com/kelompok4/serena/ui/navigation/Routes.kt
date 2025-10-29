@@ -10,4 +10,5 @@ object Routes {
     const val KONSELING = "konseling"
     const val PROFIL = "profil"
     const val MAIN = "main" // Container untuk bottom navigation
+    const val COUNSELING_SCHEDULE = "counseling_schedule"
 }
