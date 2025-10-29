@@ -14,15 +14,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kelompok4.serena.R
 import com.kelompok4.serena.ui.theme.AppTypography
 import com.kelompok4.serena.ui.theme.Primary500
+import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
 
 @Composable
-fun ProfileDetailScreen(navController: NavController, userEmail: String) {
+fun ProfileDetailScreen(
+    navController: NavController,
+    userEmail: String,
+    vm: ProfileViewModel = viewModel()
+) {
+    val context = LocalContext.current
+    val user by vm.user.collectAsState()
+
+    LaunchedEffect(userEmail) {
+        vm.loadUser(context, userEmail)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -31,33 +45,64 @@ fun ProfileDetailScreen(navController: NavController, userEmail: String) {
     ) {
         Spacer(Modifier.height(8.dp))
         Image(
-            painter = painterResource(id = R.drawable.default_profile),
+            painter = painterResource(id = user?.profilePictureRes ?: R.drawable.default_profile),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
                 .border(1.dp, Color.Gray, CircleShape)
-                .clickable { /* Ganti foto profil */ }
+                .clickable { /* aksi ganti foto profil */ }
         )
         Spacer(Modifier.height(8.dp))
         Text(text = "Ganti Foto", style = AppTypography.Body1.medium, color = Primary500)
-
         Spacer(Modifier.height(20.dp))
 
-        Card(shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+        // Card Username
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+        ) {
             Column(modifier = Modifier.padding(12.dp)) {
-                ProfileFieldRow(label = "Username", value = "Ahsana", onEdit = {
-                    navController.navigate("edit_value/$userEmail/username")
-                })
-                Spacer(Modifier.height(8.dp))
-                ProfileFieldRow(label = "Nama Lengkap", value = "Ahsana Iklila", onEdit = {
-                    navController.navigate("edit_value/$userEmail/fullname")
-                })
-                Spacer(Modifier.height(8.dp))
-                ProfileFieldRow(label = "Email", value = userEmail, onEdit = {
-                    navController.navigate("edit_value/$userEmail/email")
-                })
+                ProfileFieldRow(
+                    label = "Username",
+                    value = user?.username ?: "-",
+                    onEdit = { navController.navigate("edit_value/$userEmail/username") }
+                )
+            }
+        }
+
+        // Card Nama Lengkap
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                ProfileFieldRow(
+                    label = "Nama Lengkap",
+                    value = user?.fullName ?: "-",
+                    onEdit = { navController.navigate("edit_value/$userEmail/fullname") }
+                )
+            }
+        }
+
+        // Card Email
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                ProfileFieldRow(
+                    label = "Email",
+                    value = user?.email ?: "-",
+                    onEdit = { navController.navigate("edit_value/$userEmail/email") }
+                )
             }
         }
     }

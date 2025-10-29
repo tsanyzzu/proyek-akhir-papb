@@ -1,6 +1,5 @@
 package com.kelompok4.serena.ui.screens
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,6 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kelompok4.serena.R
 import androidx.compose.material3.Button
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import com.kelompok4.serena.ui.theme.*
 import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
 
@@ -48,10 +49,12 @@ fun ProfileScreen(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painter = painterResource(id = R.drawable.default_profile),
-                contentDescription = null,
+                contentDescription = "Profile Picture",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(72.dp)
-                    .border(1.dp, Color.Black, CircleShape)
+                    .clip(CircleShape)
+                    .border(1.dp, Color.Gray, CircleShape)
             )
             Spacer(Modifier.width(12.dp))
             Column {
@@ -116,7 +119,7 @@ fun ProfileScreen(
                 .fillMaxWidth()
                 .height(48.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Red,
+                containerColor = Color(0xFFCF1717),
                 contentColor = Color.White
             ),
             shape = RoundedCornerShape(8.dp)

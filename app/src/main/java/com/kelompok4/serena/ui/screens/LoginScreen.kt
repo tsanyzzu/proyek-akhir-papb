@@ -34,7 +34,7 @@ import com.kelompok4.serena.ui.viewmodel.LoginViewModel
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onNavigateToRegister: () -> Unit = {},
-    onNavigateToMain: () -> Unit = {}
+    onNavigateToMain: (String) -> Unit = {} // kirim email
 ) {
     val email = viewModel.email.value
     val password = viewModel.password.value
@@ -142,7 +142,9 @@ fun LoginScreen(
                     onClick = {
                         viewModel.onLoginClick(
                             context = context,
-                            onSuccess = { onNavigateToMain() },
+                            onSuccess = { user ->
+                                onNavigateToMain(user.email)
+                            },
                             onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
                         )
                     },

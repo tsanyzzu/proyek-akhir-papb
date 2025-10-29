@@ -14,56 +14,57 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import com.kelompok4.serena.ui.navigation.BottomNavItem
 import com.kelompok4.serena.ui.navigation.Routes
 import com.kelompok4.serena.ui.navigation.getAllBottomNavItems
 import com.kelompok4.serena.ui.theme.*
 
 @Composable
-fun MainScreen() {
+fun MainScreen(userEmail: String) {
     val navController = rememberNavController()
 
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            BottomNavigationBar(navController = navController, userEmail = userEmail)
         },
         containerColor = Color.White
     ) { paddingValues ->
         NavigationGraph(
             navController = navController,
+            userEmail = userEmail,
             modifier = Modifier.padding(paddingValues)
         )
     }
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavHostController) {
+fun BottomNavigationBar(navController: NavHostController, userEmail: String) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     NavigationBar(
-        // --- TAMBAHKAN MODIFIER INI UNTUK PADDING BAWAH ---
         modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
         containerColor = Color.White,
         tonalElevation = 8.dp
     ) {
         getAllBottomNavItems().forEach { item ->
             val isSelected = currentDestination?.hierarchy?.any {
-                it.route == item.route
+                it.route?.startsWith(item.route.substringBefore("/{")) == true
             } == true
 
             NavigationBarItem(
                 selected = isSelected,
                 onClick = {
-                    navController.navigate(item.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
+                    val route = if (item == BottomNavItem.Profil) {
+                        "profil/$userEmail"
+                    } else item.route
+
+                    navController.navigate(route) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -71,7 +72,6 @@ fun BottomNavigationBar(navController: NavHostController) {
                 icon = {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        // HAPUS .fillMaxHeight() DARI SINI
                         verticalArrangement = Arrangement.Center
                     ) {
                         if (isSelected) {
@@ -86,7 +86,6 @@ fun BottomNavigationBar(navController: NavHostController) {
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                         } else {
-                            // Tambahkan Spacer kosong agar tinggi tetap konsisten
                             Spacer(modifier = Modifier.height(9.dp))
                         }
 
@@ -99,12 +98,7 @@ fun BottomNavigationBar(navController: NavHostController) {
                         )
                     }
                 },
-                label = {
-                    Text(
-                        text = item.title,
-                        style = AppTypography.Button.medium
-                    )
-                },
+                label = { Text(text = item.title, style = AppTypography.Button.medium) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Primary500,
                     selectedTextColor = Primary500,
@@ -120,6 +114,7 @@ fun BottomNavigationBar(navController: NavHostController) {
 @Composable
 fun NavigationGraph(
     navController: NavHostController,
+    userEmail: String,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -127,20 +122,11 @@ fun NavigationGraph(
         startDestination = Routes.HOME,
         modifier = modifier
     ) {
-        composable(Routes.HOME) {
-            HomeScreen()
-        }
-        composable(Routes.SELF_CARE) {
-            SelfCareScreen()
-        }
-        composable(Routes.KONSELING) {
-            KonselingScreen()
-        }
+        composable(Routes.HOME) { HomeScreen() }
+        composable(Routes.SELF_CARE) { SelfCareScreen() }
+        composable(Routes.KONSELING) { KonselingScreen() }
 
-        composable(
-            route = "profil/{email}",
-            arguments = listOf(navArgument("email") { type = NavType.StringType })
-        ) { backStackEntry ->
+        composable("profil/{email}") { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
             ProfileScreen(navController = navController, userEmail = email)
         }
@@ -149,6 +135,7 @@ fun NavigationGraph(
             val email = backStackEntry.arguments?.getString("email") ?: ""
             ProfileDetailScreen(navController = navController, userEmail = email)
         }
+
 
         composable("edit_value/{email}/{field}") { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
