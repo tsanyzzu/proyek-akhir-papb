@@ -31,7 +31,8 @@ import com.kelompok4.serena.ui.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onNavigateToRegister: () -> Unit = {}
+    onNavigateToRegister: () -> Unit = {},
+    onNavigateToMain: () -> Unit = {}
 ) {
     val email = viewModel.email.value
     val password = viewModel.password.value
@@ -132,10 +133,14 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Login Button (disabled jika belum diisi)
+                // Login Button
                 AppButton(
                     text = "Masuk",
-                    onClick = viewModel::onLoginClick,
+                    onClick = {
+                        viewModel.onLoginClick()
+                        // Navigasi ke MainScreen setelah login sukses
+                        onNavigateToMain()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     buttonType = ButtonType.PRIMARY,
                     enabled = email.isNotBlank() && password.isNotBlank()
@@ -184,7 +189,6 @@ fun LoginScreen(
                         val interactionSource = remember { MutableInteractionSource() }
                         val isPressed by interactionSource.collectIsPressedAsState()
 
-                        // Ubah warna background berdasarkan status tekan
                         val backgroundColor =
                             if (isPressed) DisabledGray.copy(alpha = 0.2f) else Color.White
 

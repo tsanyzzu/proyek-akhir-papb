@@ -26,7 +26,7 @@ fun RootNavGraph(
                         !isLoggedIn -> navController.navigate(Routes.LOGIN) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
                         }
-                        else -> navController.navigate(Routes.HOME) {
+                        else -> navController.navigate(Routes.MAIN) {
                             popUpTo(Routes.SPLASH) { inclusive = true }
                         }
                     }
@@ -48,15 +48,28 @@ fun RootNavGraph(
             LoginScreen(
                 onNavigateToRegister = {
                     navController.navigate(Routes.REGISTER)
+                },
+                onNavigateToMain = {
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
                 }
             )
         }
 
         composable(Routes.REGISTER) {
-            RegisterScreen(navController = navController)
+            RegisterScreen(
+                navController = navController,
+                onNavigateToMain = {
+                    navController.navigate(Routes.MAIN) {
+                        popUpTo(Routes.REGISTER) { inclusive = true }
+                    }
+                }
+            )
         }
 
-
-        composable(Routes.HOME) { HomeScreen() }
+        composable(Routes.MAIN) {
+            MainScreen()
+        }
     }
 }

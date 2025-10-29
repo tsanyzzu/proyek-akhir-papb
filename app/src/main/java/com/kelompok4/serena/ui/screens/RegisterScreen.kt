@@ -37,7 +37,8 @@ import com.kelompok4.serena.ui.viewmodel.RegisterViewModel
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(),
-    navController: NavController
+    navController: NavController,
+    onNavigateToMain: () -> Unit = {}
 ) {
     val fullName = viewModel.fullName.value
     val email = viewModel.email.value
@@ -120,7 +121,6 @@ fun RegisterScreen(
                             Icon(
                                 painter = painterResource(id = icon),
                                 contentDescription = if (isPasswordVisible) "Sembunyikan Password" else "Tampilkan Password",
-                                // DIUBAH: Menambahkan ukuran ikon
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -145,7 +145,6 @@ fun RegisterScreen(
                             Icon(
                                 painter = painterResource(id = icon),
                                 contentDescription = if (isConfirmPasswordVisible) "Sembunyikan Password" else "Tampilkan Password",
-                                // DIUBAH: Menambahkan ukuran ikon
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -175,7 +174,11 @@ fun RegisterScreen(
                 // Tombol Daftar
                 AppButton(
                     text = "Daftar",
-                    onClick = viewModel::onRegisterClick,
+                    onClick = {
+                        viewModel.onRegisterClick()
+                        // Navigasi ke MainScreen setelah registrasi sukses
+                        onNavigateToMain()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     buttonType = ButtonType.PRIMARY,
                     enabled = fullName.isNotBlank() && email.isNotBlank() &&
@@ -243,7 +246,7 @@ fun RegisterScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 64.dp), // Mengubah top padding
+                    .padding(top = 64.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(

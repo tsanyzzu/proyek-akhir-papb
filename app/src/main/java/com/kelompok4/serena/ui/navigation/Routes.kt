@@ -6,4 +6,8 @@ object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val HOME = "home"
+    const val SELF_CARE = "self_care"
+    const val KONSELING = "konseling"
+    const val PROFIL = "profil"
+    const val MAIN = "main" // Container untuk bottom navigation
 }
