@@ -132,7 +132,7 @@ fun NavigationGraph(
             SelfCareScreen()
         }
         composable(Routes.KONSELING) {
-            KonselingScreen()
+            CounselingScreen(navController = navController)
         }
         composable(Routes.PROFIL) {
             ProfilScreen()
