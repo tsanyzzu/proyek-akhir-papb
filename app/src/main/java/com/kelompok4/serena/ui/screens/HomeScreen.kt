@@ -376,7 +376,7 @@ fun JournalSection() {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
                     contentDescription = "Tambah Jurnal",
-                    tint = MaterialTheme.colorScheme.primary // Hijau tua
+                    tint = Primary500 // Hijau tua
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -410,7 +410,7 @@ fun SleepQualitySection() {
                 Column(modifier = Modifier.weight(1.0f)) {
                     Text(
                         text = "Kualitas Tidur",
-                        style = AppTypography.Body1.bold
+                        style = AppTypography.Body1.bold,
                     )
                     Text(
                         text = "Selama 7 hari terakhir",
@@ -425,14 +425,14 @@ fun SleepQualitySection() {
                     ) {
                         Text(
                             text = "Kualitas Tidur Baik",
-                            color = MaterialTheme.colorScheme.primary, // Teks hijau tua
+                            color = Primary500, // Teks hijau tua
                             style = AppTypography.Button.bold
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary, // Ikon hijau tua
+                            tint = Primary500, // Ikon hijau tua
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -445,7 +445,7 @@ fun SleepQualitySection() {
                     CircularProgressIndicator(
                         progress = 0.8f,
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.primary, // Hijau tua
+                        color = Primary500, // Hijau tua
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
                         strokeWidth = 6.dp
                     )
