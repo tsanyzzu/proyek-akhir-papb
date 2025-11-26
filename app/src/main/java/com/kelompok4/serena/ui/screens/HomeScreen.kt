@@ -70,7 +70,7 @@ fun HomeScreen(navController: NavController, userEmail: String) {
             Spacer(modifier = Modifier.height(24.dp))
             SleepQualitySection(navController)
 
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
