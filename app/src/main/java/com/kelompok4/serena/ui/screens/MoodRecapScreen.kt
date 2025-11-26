@@ -3,8 +3,10 @@ package com.kelompok4.serena.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -18,19 +20,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.kelompok4.serena.data.Mood
 import com.kelompok4.serena.data.MoodDataManager
 import com.kelompok4.serena.data.MoodStats
 import com.kelompok4.serena.data.MoodTypes
+import com.kelompok4.serena.ui.navigation.Routes
 import com.kelompok4.serena.ui.theme.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.navigation.NavGraph.Companion.findStartDestination // TAMBAHAN PENTING
-import com.kelompok4.serena.ui.navigation.Routes // Pastikan Routes diimport
 
-// --- 1. STATEFUL COMPOSABLE (Logika Data) ---
 // --- 1. STATEFUL COMPOSABLE (Logika Data & Navigasi) ---
 @Composable
 fun MoodRecapScreen(
@@ -39,38 +38,40 @@ fun MoodRecapScreen(
 ) {
     val context = LocalContext.current
 
-    val todayMood = remember { MoodDataManager.getTodayMood(context, userEmail) }
-    val stats = remember { MoodDataManager.getMoodStats(context, userEmail, 7) }
+    // PERUBAHAN: Menggunakan produceState untuk memuat data
+    // 'produceState' akan memicu pembacaan data setiap kali Screen ini masuk ke komposisi (ditampilkan)
+    // Ini memastikan data diambil dari FILE (JSON) yang persisten, bukan hanya dari memori cache.
+
+    val todayMood by produceState<Mood?>(initialValue = null, key1 = userEmail) {
+        // Membaca mood hari ini dari MoodDataManager
+        // Karena MoodDataManager membaca file JSON, data akan tetap ada meski aplikasi direstart
+        value = MoodDataManager.getTodayMood(context, userEmail)
+    }
+
+    val stats by produceState(initialValue = MoodStats(), key1 = userEmail) {
+        // Membaca statistik terbaru
+        value = MoodDataManager.getMoodStats(context, userEmail, 7)
+    }
 
     MoodRecapContent(
         todayMood = todayMood,
         stats = stats,
         onBackClick = { navController.navigateUp() },
         onHistoryClick = { navController.navigate("mood_history/$userEmail") },
-
-        // PERBAIKAN DI SINI: Navigasi ala Bottom Bar
         onSelfCareClick = {
             navController.navigate(Routes.SELF_CARE) {
-                // 1. Hapus tumpukan back stack sampai ke start destination (Home)
-                // agar tombol Back di SelfCare membawa ke Home, bukan MoodRecap
+                // Navigasi ke Tab SelfCare dengan benar (reset back stack)
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }
-                // 2. Hindari duplikasi halaman jika diklik berkali-kali
                 launchSingleTop = true
-                // 3. Restore state halaman SelfCare jika sebelumnya sudah dibuka
                 restoreState = true
             }
         }
     )
 }
 
-// --- 2. STATELESS COMPOSABLE (Tampilan UI) ---
-// ... imports (tetap sama)
-
-// ... MoodRecapScreen (tetap sama)
-
-// --- 2. STATELESS COMPOSABLE (Tampilan UI) ---
+// --- 2. STATELESS COMPOSABLE (Tampilan UI - Tidak Berubah) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoodRecapContent(
@@ -80,6 +81,7 @@ fun MoodRecapContent(
     onHistoryClick: () -> Unit,
     onSelfCareClick: () -> Unit
 ) {
+    // Menentukan warna background berdasarkan mood (dengan fallback jika null)
     val moodColor = remember(todayMood) {
         todayMood?.let {
             try {
@@ -121,22 +123,19 @@ fun MoodRecapContent(
             )
         }
     ) { paddingValues ->
-        // PERUBAHAN STRUKTUR LAYOUT DI SINI
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
-            // Hapus verticalArrangement global, kita atur manual
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Bungkus konten scrollable (Card Mood, Rekomendasi, Statistik) dalam Column dengan weight(1f)
-            // Ini akan membuat bagian ini mengambil sisa ruang yang ada, tapi tombol tetap aman di bawah.
+            // 1. KONTEN UTAMA (Scrollable)
             Column(
                 modifier = Modifier
-                    .weight(1f) // Mengambil sisa ruang vertikal
-                    .verticalScroll(rememberScrollState()), // Agar bisa di-scroll jika konten panjang
-                verticalArrangement = Arrangement.spacedBy(16.dp), // Jarak antar elemen
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // --- Main Mood Card ---
@@ -180,16 +179,23 @@ fun MoodRecapContent(
                         }
                     }
                 } else {
+                    // Tampilan jika data mood belum ada (misal hari sudah berganti)
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Box(
-                            modifier = Modifier.padding(32.dp).fillMaxWidth(),
+                            modifier = Modifier
+                                .padding(32.dp)
+                                .fillMaxWidth(),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Belum ada mood hari ini", style = AppTypography.Body1.medium)
+                            Text(
+                                "Belum ada mood yang tercatat hari ini",
+                                style = AppTypography.Body1.medium,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
@@ -303,23 +309,21 @@ fun MoodRecapContent(
                     }
                 }
 
-                // Spacer kecil di akhir konten scrollable agar tidak mepet tombol
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // --- Action Buttons (TETAP DI BAWAH) ---
-            // Tidak menggunakan Spacer(weight) lagi, tapi langsung ditaruh setelah Column konten utama
+            // 2. TOMBOL FIXED (SelfCare)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp), // Beri jarak aman dari konten atas
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
                     onClick = onSelfCareClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(56.dp), // PERBAIKAN: Set tinggi tombol eksplisit agar tidak tipis
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Primary500
                     ),
@@ -332,14 +336,10 @@ fun MoodRecapContent(
     }
 }
 
-// ... Preview (tetap sama)
-
-// --- 3. PREVIEW ---
 @Preview(showBackground = true, widthDp = 360, heightDp = 800)
 @Composable
 fun MoodRecapScreenPreview() {
     ProyekakhirpapbTheme {
-        // Data Dummy untuk Preview
         val dummyMood = Mood(
             moodName = MoodTypes.GEMBIRA,
             moodEmoji = "😊",

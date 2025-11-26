@@ -1,5 +1,6 @@
 package com.kelompok4.serena.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,12 +12,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale // Import Added
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.kelompok4.serena.R
 
 @Composable
 fun CounselingScreen(navController: NavHostController) {
@@ -45,37 +49,57 @@ fun CounselingScreen(navController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopSearchBar() {
+    // State untuk teks pencarian
+    var searchText by remember { mutableStateOf("") }
+
     TopAppBar(
         title = {
             OutlinedTextField(
-                value = "Cari",
-                onValueChange = {},
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Cari") },
+                value = searchText,
+                onValueChange = { searchText = it }, // 'it' sekarang akan dikenali sebagai String
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp), // Tinggi 50dp
+                placeholder = {
+                    Text(
+                        text = "Cari",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                },
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    fontSize = 14.sp
+                ),
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search"
+                        contentDescription = "Search",
+                        modifier = Modifier.size(20.dp),
+                        tint = Color.Gray
                     )
                 },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.LightGray,
-                    unfocusedBorderColor = Color.LightGray
-                )
+                    unfocusedBorderColor = Color.LightGray,
+                    cursorColor = Color(0xFF2D7D5F)
+                ),
+                singleLine = true
+                // HAPUS baris contentPadding karena tidak didukung oleh OutlinedTextField
             )
         },
         actions = {
             IconButton(
-                onClick = {},
+                onClick = { /* TODO: Navigasi ke History */ },
                 modifier = Modifier
                     .padding(end = 8.dp)
                     .size(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Refresh,
+                    imageVector = Icons.Default.History,
                     contentDescription = "History",
-                    tint = Color(0xFF2D7D5F)
+                    tint = Color(0xFF2D7D5F),
+                    modifier = Modifier.size(28.dp)
                 )
             }
         },
@@ -122,11 +146,12 @@ fun TaglineBanner() {
             }
 
             // Placeholder for doctor image
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.tanteseksi),
+                contentDescription = "Foto Ahli",
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White.copy(alpha = 0.2f))
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
             )
         }
     }
@@ -159,23 +184,29 @@ fun CounselorSection() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Counselor 1
-        CounselorCard(
-            name = "Dr. Laura Azzura, S.Psi.",
-            specialty = "Psikiater",
-            price = "Rp 20.000",
-            isFree = false
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Kartu Pertama (konselor1)
+            CounselorCard(
+                name = "Dr. Laura Azzura, S.Psi.",
+                specialty = "Psikolog Klinis",
+                price = "Rp 150.000",
+                isFree = false,
+                imageRes = R.drawable.konselor1 // Gambar 1
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Counselor 2
-        CounselorCard(
-            name = "Dr. Jane Cooper Sp.Kj.",
-            specialty = "Sp. Jiwa",
-            price = "Rp15.000",
-            isFree = false
-        )
+            // Kartu Kedua (konselor2)
+            CounselorCard(
+                name = "Dr. Sarah Putri",
+                specialty = "Psikiater",
+                price = "Rp 200.000",
+                isFree = false,
+                imageRes = R.drawable.konselor2 // Gambar 2
+            )
+        }
     }
 }
 
@@ -184,11 +215,12 @@ fun CounselorCard(
     name: String,
     specialty: String,
     price: String,
-    isFree: Boolean
+    isFree: Boolean,
+    imageRes: Int // Tambahkan parameter ini
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+            .width(600.dp)
             .height(100.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -202,12 +234,14 @@ fun CounselorCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Doctor Image Placeholder
-            Box(
+            // Gambar Dokter Dinamis
+            Image(
+                painter = painterResource(id = imageRes), // Gunakan parameter imageRes di sini
+                contentDescription = "Foto Ahli",
+                contentScale = ContentScale.Crop, // Agar gambar mengisi kotak dengan rapi
                 modifier = Modifier
-                    .size(76.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFE3F2FD))
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -257,4 +291,3 @@ fun CounselorCard(
 fun CounselingScreenPreview() {
     CounselingScreen(navController = NavHostController(LocalContext.current))
 }
-
