@@ -273,5 +273,19 @@ fun NavigationGraph(
             val email = backStackEntry.arguments?.getString("email") ?: ""
             MoodHistoryScreen(navController = navController, userEmail = email)
         }
+
+        composable(Routes.KONSELING) {
+            CounselingScreen(navController = navController)
+        }
+
+        composable("counseling_payment") {
+            CounselingPaymentScreen(navController = navController)
+        }
+
+        composable("counseling_detail") {
+            DoctorDetailScreen(navController = navController)
+        }
+
+
     }
 }

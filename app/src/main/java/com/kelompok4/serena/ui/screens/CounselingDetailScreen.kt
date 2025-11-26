@@ -2,10 +2,7 @@ package com.kelompok4.serena.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -15,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -23,10 +19,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.kelompok4.serena.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DoctorDetailScreen() {
+fun DoctorDetailScreen(
+    navController: NavController // Pastikan ada parameter ini
+) {
     var selectedDate by remember { mutableStateOf("Hari ini") }
     var selectedTime by remember { mutableStateOf("") }
 
@@ -38,7 +39,7 @@ fun DoctorDetailScreen() {
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
@@ -59,15 +60,12 @@ fun DoctorDetailScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
             // Doctor Image
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(280.dp)
-                    .background(Color(0xFFF5F5F5))
-            ) {
-                // Placeholder for doctor image
-                // In real app, use: Image(painter = painterResource(R.drawable.doctor), ...)
-            }
+            Image(
+                painter = painterResource(id = R.drawable.hddoktor),
+                contentDescription = "Foto Ahli",
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -95,10 +93,7 @@ fun DoctorDetailScreen() {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // University Info
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.School,
                         contentDescription = "Education",
@@ -124,15 +119,9 @@ fun DoctorDetailScreen() {
                         onClick = { },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF2D7D5F)
-                        )
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D7D5F))
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Share",
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(imageVector = Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Bagikan", fontSize = 14.sp)
                     }
@@ -141,15 +130,9 @@ fun DoctorDetailScreen() {
                         onClick = { },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF2D7D5F)
-                        )
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D7D5F))
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.FavoriteBorder,
-                            contentDescription = "Save",
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Save", modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Simpan", fontSize = 14.sp)
                     }
@@ -158,19 +141,9 @@ fun DoctorDetailScreen() {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Date Selection
-                Text(
-                    text = "Tanggal",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
-                )
-
+                Text("Tanggal", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                 Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     dates.forEach { date ->
                         DateChip(
                             text = date,
@@ -184,19 +157,9 @@ fun DoctorDetailScreen() {
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Time Selection
-                Text(
-                    text = "Jam",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
-                )
-
+                Text("Jam", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                 Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     times.forEach { time ->
                         TimeChip(
                             text = time,
@@ -209,22 +172,18 @@ fun DoctorDetailScreen() {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Reservation Button
+                // Reservation Button - Navigate to Payment
                 Button(
-                    onClick = { },
+                    onClick = {
+                        navController.navigate("counseling_payment")
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2D7D5F)
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D7D5F))
                 ) {
-                    Text(
-                        text = "Reservasi",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Text("Reservasi", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -250,10 +209,7 @@ fun DateChip(
             color = if (isSelected) Color(0xFF2D7D5F) else Color(0xFFE0E0E0)
         )
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Text(
                 text = text,
                 fontSize = 14.sp,
@@ -281,10 +237,7 @@ fun TimeChip(
             color = if (isSelected) Color(0xFF2D7D5F) else Color(0xFFE0E0E0)
         )
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             Text(
                 text = text,
                 fontSize = 14.sp,
@@ -298,5 +251,5 @@ fun TimeChip(
 @Preview
 @Composable
 fun DoctorDetailScreenPreview() {
-    DoctorDetailScreen()
+    DoctorDetailScreen(navController = rememberNavController())
 }

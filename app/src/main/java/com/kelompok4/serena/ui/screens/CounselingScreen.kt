@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale // Import Added
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -20,12 +20,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.kelompok4.serena.R
 
 @Composable
 fun CounselingScreen(navController: NavHostController) {
-    var selectedTab by remember { mutableStateOf(2) }
-
     Scaffold(
         topBar = { TopSearchBar() },
     ) { padding ->
@@ -35,13 +34,14 @@ fun CounselingScreen(navController: NavHostController) {
                 .padding(padding)
                 .background(Color(0xFFF5F5F5))
         ) {
-            // tagline Banner
+            // Tagline Banner
             TaglineBanner()
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Counselor Recommendations
-            CounselorSection()
+            // Kita kirim navController ke sini
+            CounselorSection(navController)
         }
     }
 }
@@ -49,17 +49,16 @@ fun CounselingScreen(navController: NavHostController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopSearchBar() {
-    // State untuk teks pencarian
     var searchText by remember { mutableStateOf("") }
 
     TopAppBar(
         title = {
             OutlinedTextField(
                 value = searchText,
-                onValueChange = { searchText = it }, // 'it' sekarang akan dikenali sebagai String
+                onValueChange = { searchText = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp), // Tinggi 50dp
+                    .height(50.dp),
                 placeholder = {
                     Text(
                         text = "Cari",
@@ -85,7 +84,6 @@ fun TopSearchBar() {
                     cursorColor = Color(0xFF2D7D5F)
                 ),
                 singleLine = true
-                // HAPUS baris contentPadding karena tidak didukung oleh OutlinedTextField
             )
         },
         actions = {
@@ -145,7 +143,6 @@ fun TaglineBanner() {
                 )
             }
 
-            // Placeholder for doctor image
             Image(
                 painter = painterResource(id = R.drawable.tanteseksi),
                 contentDescription = "Foto Ahli",
@@ -158,7 +155,7 @@ fun TaglineBanner() {
 }
 
 @Composable
-fun CounselorSection() {
+fun CounselorSection(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -189,22 +186,30 @@ fun CounselorSection() {
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Kartu Pertama (konselor1)
+            // Kartu Pertama
             CounselorCard(
                 name = "Dr. Laura Azzura, S.Psi.",
                 specialty = "Psikolog Klinis",
                 price = "Rp 150.000",
                 isFree = false,
-                imageRes = R.drawable.konselor1 // Gambar 1
+                imageRes = R.drawable.konselor1,
+                onBookClick = {
+                    // Navigasi ke halaman detail (hardcoded Dr. Laura)
+                    navController.navigate("counseling_detail")
+                }
             )
 
-            // Kartu Kedua (konselor2)
+            // Kartu Kedua
             CounselorCard(
                 name = "Dr. Sarah Putri",
                 specialty = "Psikiater",
                 price = "Rp 200.000",
                 isFree = false,
-                imageRes = R.drawable.konselor2 // Gambar 2
+                imageRes = R.drawable.konselor2,
+                onBookClick = {
+                    // Navigasi ke halaman detail yang sama
+                    navController.navigate("counseling_detail")
+                }
             )
         }
     }
@@ -216,11 +221,12 @@ fun CounselorCard(
     specialty: String,
     price: String,
     isFree: Boolean,
-    imageRes: Int // Tambahkan parameter ini
+    imageRes: Int,
+    onBookClick: () -> Unit // Callback untuk navigasi
 ) {
     Card(
         modifier = Modifier
-            .width(600.dp)
+            .fillMaxWidth() // Agar lebar penuh mengikuti parent
             .height(100.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
@@ -234,11 +240,11 @@ fun CounselorCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gambar Dokter Dinamis
+            // Gambar Dokter
             Image(
-                painter = painterResource(id = imageRes), // Gunakan parameter imageRes di sini
+                painter = painterResource(id = imageRes),
                 contentDescription = "Foto Ahli",
-                contentScale = ContentScale.Crop, // Agar gambar mengisi kotak dengan rapi
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(12.dp))
@@ -269,8 +275,9 @@ fun CounselorCard(
                 )
             }
 
+            // Tombol Reservasi dengan aksi
             OutlinedButton(
-                onClick = {},
+                onClick = onBookClick, // Menggunakan parameter onClick
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = Color(0xFF2D7D5F)
@@ -289,5 +296,5 @@ fun CounselorCard(
 @Preview
 @Composable
 fun CounselingScreenPreview() {
-    CounselingScreen(navController = NavHostController(LocalContext.current))
+    CounselingScreen(navController = rememberNavController())
 }
