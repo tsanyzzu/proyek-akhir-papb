@@ -2,6 +2,7 @@ package com.kelompok4.serena.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,15 +24,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kelompok4.serena.ui.theme.*
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.kelompok4.serena.ui.navigation.Routes
 import com.kelompok4.serena.R
 import com.kelompok4.serena.data.JournalDataManager
+import com.kelompok4.serena.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 @Composable
 fun HomeScreen(navController: NavController, userEmail: String) {
@@ -40,10 +40,9 @@ fun HomeScreen(navController: NavController, userEmail: String) {
             .fillMaxSize()
             .background(Primary50)
     ) {
-        // BAGIAN 1: HEADER (TETAP)
-        HeaderSection()
+        // PERBAIKAN 1: Kirim navController dan userEmail ke HeaderSection
+        HeaderSection(navController, userEmail)
 
-        // BAGIAN 2: KONTEN (BISA SCROLL)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,10 +65,9 @@ fun HomeScreen(navController: NavController, userEmail: String) {
     }
 }
 
-// --- BAGIAN HEADER (TETAP) ---
-
+// PERBAIKAN 2: Tambahkan parameter di fungsi HeaderSection
 @Composable
-fun HeaderSection() {
+fun HeaderSection(navController: NavController, userEmail: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,19 +139,26 @@ fun HeaderSection() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround,
         ) {
-            MoodIcon(icon = Icons.Default.SentimentVerySatisfied)
-            MoodIcon(icon = Icons.Default.SentimentSatisfied)
-            MoodIcon(icon = Icons.Default.SentimentNeutral)
-            MoodIcon(icon = Icons.Default.SentimentDissatisfied)
-            MoodIcon(icon = Icons.Default.SentimentVeryDissatisfied)
+            // Parameter navController dan userEmail sekarang tersedia
+            MoodIcon(icon = Icons.Default.SentimentVerySatisfied, navController = navController, userEmail = userEmail)
+            MoodIcon(icon = Icons.Default.SentimentSatisfied, navController = navController, userEmail = userEmail)
+            MoodIcon(icon = Icons.Default.SentimentNeutral, navController = navController, userEmail = userEmail)
+            MoodIcon(icon = Icons.Default.SentimentDissatisfied, navController = navController, userEmail = userEmail)
+            MoodIcon(icon = Icons.Default.SentimentVeryDissatisfied, navController = navController, userEmail = userEmail)
         }
     }
 }
 
 @Composable
-fun MoodIcon(icon: androidx.compose.ui.graphics.vector.ImageVector) {
+fun MoodIcon(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    navController: NavController,
+    userEmail: String
+) {
     IconButton(
-        onClick = { /* TODO: Aksi pilih mood */ },
+        onClick = {
+            navController.navigate("save_mood/$userEmail")
+        },
         modifier = Modifier
             .size(48.dp)
             .clip(CircleShape)
@@ -275,7 +280,6 @@ fun JournalSection(navController: NavController, userEmail: String) {
     val context = LocalContext.current
     var latestJournal by remember { mutableStateOf<com.kelompok4.serena.data.Journal?>(null) }
 
-    // Load jurnal terbaru saat screen dibuka
     LaunchedEffect(Unit) {
         latestJournal = JournalDataManager.getLatestJournal(context, userEmail)
     }
@@ -289,7 +293,6 @@ fun JournalSection(navController: NavController, userEmail: String) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Tampilkan jurnal terakhir jika ada
         if (latestJournal != null) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -309,7 +312,9 @@ fun JournalSection(navController: NavController, userEmail: String) {
                             Text(
                                 text = latestJournal!!.moodEmoji,
                                 style = AppTypography.Body1.regular,
-                                fontSize = 28.sp                            )
+                                // PERBAIKAN 3: Gunakan .sp extension
+                                fontSize = 20.sp
+                            )
                         }
 
                         Spacer(modifier = Modifier.width(8.dp))
@@ -344,7 +349,6 @@ fun JournalSection(navController: NavController, userEmail: String) {
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        // Kartu Tambah Jurnal
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),

@@ -249,5 +249,29 @@ fun NavigationGraph(
                 journalId = journalId
             )
         }
+        // Mood Routes
+        composable(
+            route = "save_mood/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            SaveMoodScreen(navController = navController, userEmail = email)
+        }
+
+        composable(
+            route = "mood_recap/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            MoodRecapScreen(navController = navController, userEmail = email)
+        }
+
+        composable(
+            route = "mood_history/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            MoodHistoryScreen(navController = navController, userEmail = email)
+        }
     }
 }
