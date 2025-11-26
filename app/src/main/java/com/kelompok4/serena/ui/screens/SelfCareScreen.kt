@@ -30,6 +30,7 @@ import com.example.serena.ui.components.RecommendationCard
 import com.example.serena.ui.components.SectionHeader
 import com.kelompok4.serena.ui.theme.*
 import com.kelompok4.serena.R
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -164,3 +165,12 @@ data class SampleActivity(
     val views: Int,
     val likes: Int
 )
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+fun SelfCareScreenPreview() {
+    ProyekakhirpapbTheme {
+        // Kita tidak perlu mengirim navController karena default-nya sudah null
+        SelfCareScreen()
+    }
+}

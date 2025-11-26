@@ -2,7 +2,7 @@ package com.kelompok4.serena.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.clickable // Pastikan ini di-import
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -32,24 +32,33 @@ import com.kelompok4.serena.data.JournalDataManager
 import com.kelompok4.serena.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.scale
+import androidx.compose.material.icons.filled.AddCircle
+import com.kelompok4.serena.data.Mood
+import com.kelompok4.serena.data.MoodDataManager
+import com.kelompok4.serena.data.MoodTypes
+
 
 @Composable
 fun HomeScreen(navController: NavController, userEmail: String) {
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Primary50)
+            .verticalScroll(scrollState)
     ) {
-        // PERBAIKAN 1: Kirim navController dan userEmail ke HeaderSection
         HeaderSection(navController, userEmail)
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                 .background(MaterialTheme.colorScheme.background)
-                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
+                .defaultMinSize(minHeight = 600.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -60,20 +69,34 @@ fun HomeScreen(navController: NavController, userEmail: String) {
             JournalSection(navController = navController, userEmail = userEmail)
             Spacer(modifier = Modifier.height(24.dp))
             SleepQualitySection(navController)
-            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
 
-// PERBAIKAN 2: Tambahkan parameter di fungsi HeaderSection
 @Composable
 fun HeaderSection(navController: NavController, userEmail: String) {
+    val context = LocalContext.current
+    var todayMood by remember { mutableStateOf<Mood?>(null) }
+
+    LaunchedEffect(Unit) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayStr = dateFormat.format(Date())
+        val allMoods = MoodDataManager.getMoods(context, userEmail)
+        todayMood = allMoods.find { mood ->
+            val moodDateStr = dateFormat.format(Date(mood.date))
+            moodDateStr == todayStr
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Primary50)
             .padding(16.dp)
     ) {
+        // --- Bagian Atas: Profil & Notifikasi ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -98,14 +121,8 @@ fun HeaderSection(navController: NavController, userEmail: String) {
                 onClick = { /* TODO: Aksi notifikasi */ },
                 modifier = Modifier
                     .size(40.dp)
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .background(
-                        color = MaterialTheme.colorScheme.background,
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
+                    .background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(12.dp))
             ) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
@@ -118,37 +135,94 @@ fun HeaderSection(navController: NavController, userEmail: String) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Selamat Pagi!",
-                style = AppTypography.H2.bold
-            )
-            Text(
-                text = "Bagaimana perasaanmu hari ini?",
-                style = AppTypography.Subtitle2.regular,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        // --- Bagian Konten Utama (CONDITIONAL) ---
+        if (todayMood != null) {
+            // === KONDISI 1: SUDAH ADA MOOD (Tampilan Card Mood) ===
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = "Mood Kamu Hari Ini",
+                    style = AppTypography.H4.bold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    // PERUBAHAN: Menambahkan modifier clickable di sini
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(16.dp))
+                        .clickable {
+                            navController.navigate("mood_recap/$userEmail")
+                        },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Kiri: Teks Nama Mood & Deskripsi
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = todayMood!!.moodName,
+                                style = AppTypography.H4.bold,
+                                color = Primary700
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = getMoodDescription(todayMood!!.moodName),
+                                style = AppTypography.Subtitle2.regular,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 20.sp
+                            )
+                        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
-        ) {
-            // Parameter navController dan userEmail sekarang tersedia
-            MoodIcon(icon = Icons.Default.SentimentVerySatisfied, navController = navController, userEmail = userEmail)
-            MoodIcon(icon = Icons.Default.SentimentSatisfied, navController = navController, userEmail = userEmail)
-            MoodIcon(icon = Icons.Default.SentimentNeutral, navController = navController, userEmail = userEmail)
-            MoodIcon(icon = Icons.Default.SentimentDissatisfied, navController = navController, userEmail = userEmail)
-            MoodIcon(icon = Icons.Default.SentimentVeryDissatisfied, navController = navController, userEmail = userEmail)
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        // Kanan: Icon Mood (Emoji)
+                        Text(
+                            text = todayMood!!.moodEmoji,
+                            fontSize = 56.sp
+                        )
+                    }
+                }
+            }
+        } else {
+            // === KONDISI 2: BELUM ADA MOOD (Tampilan Pilihan Icon) ===
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Selamat Pagi!",
+                    style = AppTypography.H2.bold
+                )
+                Text(
+                    text = "Bagaimana perasaanmu hari ini?",
+                    style = AppTypography.Subtitle2.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
+            ) {
+                MoodIcon(icon = Icons.Default.SentimentVerySatisfied, navController = navController, userEmail = userEmail)
+                MoodIcon(icon = Icons.Default.SentimentSatisfied, navController = navController, userEmail = userEmail)
+                MoodIcon(icon = Icons.Default.SentimentNeutral, navController = navController, userEmail = userEmail)
+                MoodIcon(icon = Icons.Default.SentimentDissatisfied, navController = navController, userEmail = userEmail)
+                MoodIcon(icon = Icons.Default.SentimentVeryDissatisfied, navController = navController, userEmail = userEmail)
+            }
         }
     }
 }
 
+// ... (Sisa fungsi Composable lainnya seperti MoodIcon, OneOnOneCard, dll tetap sama)
 @Composable
 fun MoodIcon(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -366,7 +440,7 @@ fun JournalSection(navController: NavController, userEmail: String) {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
                     contentDescription = "Tambah Jurnal",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = Primary500
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -415,14 +489,14 @@ fun SleepQualitySection(navController: NavController) {
                     ) {
                         Text(
                             text = "Kualitas Tidur Baik",
-                            color = MaterialTheme.colorScheme.primary,
+                            color = Primary500,
                             style = AppTypography.Button.bold
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = Primary500,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -435,7 +509,7 @@ fun SleepQualitySection(navController: NavController) {
                     CircularProgressIndicator(
                         progress = 0.8f,
                         modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.primary,
+                        color = Primary500,
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
                         strokeWidth = 6.dp
                     )
@@ -463,6 +537,18 @@ fun SectionHeader(title: String, onSeeAllClick: () -> Unit) {
         TextButton(onClick = onSeeAllClick) {
             Text(text = "Lihat semua", style = AppTypography.Subtitle2.medium, color = Primary500)
         }
+    }
+}
+
+// Helper function untuk memberikan deskripsi berdasarkan mood
+fun getMoodDescription(moodName: String): String {
+    return when (moodName) {
+        MoodTypes.GEMBIRA -> "Energi positifmu menular! Manfaatkan hari ini untuk hal produktif."
+        MoodTypes.SEDIH -> "Tidak apa-apa merasa sedih. Ambil waktu sejenak untuk dirimu sendiri."
+        MoodTypes.NETRAL -> "Hari yang tenang. Jalani dengan santai dan tetap fokus."
+        MoodTypes.MARAH -> "Tarik napas dalam-dalam. Tenangkan pikiran sebelum bertindak."
+        MoodTypes.DEPRESI -> "Kamu tidak sendirian. Jangan ragu mencari dukungan jika perlu."
+        else -> "Tetap semangat menjalani hari ini!"
     }
 }
 

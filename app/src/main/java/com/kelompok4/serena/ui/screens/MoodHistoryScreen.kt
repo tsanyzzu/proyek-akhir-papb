@@ -16,16 +16,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.kelompok4.serena.data.Mood
 import com.kelompok4.serena.data.MoodDataManager
+import com.kelompok4.serena.data.MoodStats
 import com.kelompok4.serena.data.MoodTypes
 import com.kelompok4.serena.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+// --- 1. STATEFUL COMPOSABLE (Logika Data) ---
 @Composable
 fun MoodHistoryScreen(
     navController: NavHostController,
@@ -33,9 +37,11 @@ fun MoodHistoryScreen(
 ) {
     val context = LocalContext.current
     var selectedPeriod by remember { mutableStateOf("Week") }
+
     val moods = remember(selectedPeriod) {
-        MoodDataManager.getMoodsByUser(context, userEmail)
+        MoodDataManager.getMoods(context, userEmail)
     }
+
     val stats = remember(selectedPeriod) {
         val days = when (selectedPeriod) {
             "Day" -> 1
@@ -47,10 +53,26 @@ fun MoodHistoryScreen(
         MoodDataManager.getMoodStats(context, userEmail, days)
     }
 
-    val weeklyData = remember {
-        MoodDataManager.getWeeklyMoodData(context, userEmail)
-    }
+    // Panggil UI Content dan kirim datanya
+    MoodHistoryContent(
+        moods = moods,
+        stats = stats,
+        selectedPeriod = selectedPeriod,
+        onPeriodChange = { selectedPeriod = it },
+        onBackClick = { navController.navigateUp() }
+    )
+}
 
+// --- 2. STATELESS COMPOSABLE (Tampilan UI) ---
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MoodHistoryContent(
+    moods: List<Mood>,
+    stats: MoodStats,
+    selectedPeriod: String,
+    onPeriodChange: (String) -> Unit,
+    onBackClick: () -> Unit
+) {
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -65,9 +87,9 @@ fun MoodHistoryScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Kembali",
                             tint = Color.Black
                         )
@@ -99,7 +121,7 @@ fun MoodHistoryScreen(
                     listOf("Day", "Week", "Month", "Year").forEach { period ->
                         FilterChip(
                             selected = selectedPeriod == period,
-                            onClick = { selectedPeriod = period },
+                            onClick = { onPeriodChange(period) },
                             label = { Text(period) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = Primary500,
@@ -176,7 +198,7 @@ fun MoodHistoryScreen(
                                             color = color.copy(alpha = 0.2f)
                                         ) {
                                             Text(
-                                                text = label,
+                                                text = count.toString(),
                                                 style = AppTypography.Button.medium,
                                                 color = color,
                                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
@@ -190,7 +212,7 @@ fun MoodHistoryScreen(
                                     Box(
                                         modifier = Modifier
                                             .width(40.dp)
-                                            .fillMaxHeight(heightRatio.coerceIn(0.1f, 1f))
+                                            .fillMaxHeight(heightRatio.coerceIn(0.02f, 1f))
                                             .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
                                             .background(color)
                                     )
@@ -220,26 +242,13 @@ fun MoodHistoryScreen(
                         Text(
                             text = when {
                                 stats.totalMoods == 0 -> "Belum ada data mood. Yuk mulai catat mood kamu!"
-                                stats.gembirPercentage >= 0.5f -> "Mood kamu minggu ini naik turun, tapi itu hal yang sangat wajar, kok. Di awal minggu, mood kamu lagi cukup stabil. Namun, ada penurunan cukup tajam di tengah dengan perasaan gembira, Namun, ada penurunan cukup tajam dengan perasaan gembira. Namun, ada penurunan cukup..."
-                                stats.depresiPercentage >= 0.3f -> "Sepertinya minggu ini cukup berat ya. Jangan ragu untuk berbicara dengan seseorang atau menggunakan fitur konseling kami."
-                                else -> "Mood kamu cukup stabil minggu ini. Pertahankan ya!"
+                                stats.gembirPercentage >= 0.5f -> "Wah, mood kamu dominan positif! Pertahankan energi baik ini ya."
+                                stats.depresiPercentage >= 0.3f || stats.marahPercentage >= 0.3f -> "Sepertinya minggu ini cukup berat. Jangan ragu untuk istirahat atau cerita ke orang terdekat."
+                                else -> "Mood kamu cukup bervariasi. Ingat, semua perasaan itu valid kok."
                             },
                             style = AppTypography.Subtitle2.regular,
                             color = GrayText
                         )
-
-                        if (stats.totalMoods > 0) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            TextButton(
-                                onClick = { /* Navigate to full history */ }
-                            ) {
-                                Text(
-                                    text = "Lihat Semua",
-                                    style = AppTypography.Body1.medium,
-                                    color = Primary500
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -272,13 +281,13 @@ fun MoodHistoryScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
                             Text(
-                                text = "Serena punya rekomendasi buat kamu!",
+                                text = "Rekomendasi Serena",
                                 style = AppTypography.Body1.bold,
                                 color = Color.White
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Coba kegiatan sederhana yang bisa bantu kamu merasa lebih tenang dan fokus pada fitur SelfCare",
+                                text = "Coba latihan pernapasan atau dengarkan musik relaksasi di menu Self-Care.",
                                 style = AppTypography.Subtitle2.regular,
                                 color = Color.White.copy(alpha = 0.9f)
                             )
@@ -287,7 +296,7 @@ fun MoodHistoryScreen(
                 }
             }
 
-            // Recent Moods List (if any)
+            // Recent Moods List
             if (moods.isNotEmpty()) {
                 item {
                     Text(
@@ -306,13 +315,17 @@ fun MoodHistoryScreen(
 }
 
 @Composable
-fun MoodHistoryItem(mood: com.kelompok4.serena.data.Mood) {
+fun MoodHistoryItem(mood: Mood) {
     val dateStr = remember(mood.date) {
         val sdf = SimpleDateFormat("EEEE, dd MMM yyyy", Locale("id", "ID"))
         sdf.format(Date(mood.date))
     }
 
-    val moodColor = Color(android.graphics.Color.parseColor(MoodTypes.getMoodColor(mood.moodName)))
+    val moodColor = try {
+        Color(android.graphics.Color.parseColor(MoodTypes.getMoodColor(mood.moodName)))
+    } catch (e: Exception) {
+        Primary500
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -353,5 +366,37 @@ fun MoodHistoryItem(mood: com.kelompok4.serena.data.Mood) {
                 )
             }
         }
+    }
+}
+
+// --- 3. PREVIEW ---
+@Preview(showBackground = true, widthDp = 360, heightDp = 1200)
+@Composable
+fun MoodHistoryScreenPreview() {
+    ProyekakhirpapbTheme {
+        // Data Dummy untuk Preview
+        val dummyStats = MoodStats(
+            totalMoods = 10,
+            gembirCount = 4,
+            sedihCount = 2,
+            netralCount = 3,
+            marahCount = 0,
+            depresiCount = 1
+        )
+
+        val dummyMoods = listOf(
+            Mood(moodName = MoodTypes.GEMBIRA, moodEmoji = "😊", userEmail = "test", date = System.currentTimeMillis()),
+            Mood(moodName = MoodTypes.SEDIH, moodEmoji = "😢", userEmail = "test", date = System.currentTimeMillis() - 86400000),
+            Mood(moodName = MoodTypes.NETRAL, moodEmoji = "😐", userEmail = "test", date = System.currentTimeMillis() - 172800000)
+        )
+
+        // Menggunakan MoodHistoryContent (Stateless) agar bisa diisi data dummy
+        MoodHistoryContent(
+            moods = dummyMoods,
+            stats = dummyStats,
+            selectedPeriod = "Week",
+            onPeriodChange = {},
+            onBackClick = {}
+        )
     }
 }

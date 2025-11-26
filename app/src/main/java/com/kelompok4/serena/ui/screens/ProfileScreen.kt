@@ -1,5 +1,6 @@
 package com.kelompok4.serena.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,22 +8,23 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kelompok4.serena.R
-import androidx.compose.material3.Button
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import com.kelompok4.serena.data.MoodDataManager // Pastikan import ini ada
 import com.kelompok4.serena.ui.theme.*
 import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
 
@@ -111,6 +113,30 @@ fun ProfileScreen(
         }
 
         Spacer(Modifier.weight(1f))
+
+        // --- TOMBOL RESET DATA MOOD (BARU) ---
+        Button(
+            onClick = {
+                val success = MoodDataManager.clearAllMoods(context)
+                if (success) {
+                    Toast.makeText(context, "Data Mood berhasil direset", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Data Mood sudah kosong", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFFFA000), // Warna oranye sebagai peringatan (bisa diganti)
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text("Reset Data Mood", style = AppTypography.Body1.medium)
+        }
+
+        Spacer(Modifier.height(12.dp))
 
         // Tombol keluar
         Button(

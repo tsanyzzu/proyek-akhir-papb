@@ -24,6 +24,8 @@ import com.kelompok4.serena.data.MoodTypes
 import com.kelompok4.serena.ui.components.AppButton
 import com.kelompok4.serena.ui.components.ButtonType
 import com.kelompok4.serena.ui.theme.*
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun SaveMoodScreen(
@@ -191,6 +193,17 @@ fun MoodSelectorButton(
         Text(
             text = emoji,
             fontSize = 32.sp
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 800)
+@Composable
+fun SaveMoodScreenPreview() {
+    ProyekakhirpapbTheme {
+        SaveMoodScreen(
+            navController = rememberNavController(),
+            userEmail = "contoh@email.com"
         )
     }
 }
