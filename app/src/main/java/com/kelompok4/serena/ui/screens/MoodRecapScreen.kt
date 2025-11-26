@@ -120,8 +120,11 @@ fun MoodRecapScreen(
             }
 
             // Recommendation Card
+            // Recommendation Card
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { navController.navigate("mood_history/$userEmail") },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Primary50)
             ) {
@@ -158,6 +161,7 @@ fun MoodRecapScreen(
                     }
                 }
             }
+
 
             // Stats Section
             Card(
