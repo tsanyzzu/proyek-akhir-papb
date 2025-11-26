@@ -27,8 +27,11 @@ import com.kelompok4.serena.data.MoodTypes
 import com.kelompok4.serena.ui.theme.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.navigation.NavGraph.Companion.findStartDestination // TAMBAHAN PENTING
+import com.kelompok4.serena.ui.navigation.Routes // Pastikan Routes diimport
 
 // --- 1. STATEFUL COMPOSABLE (Logika Data) ---
+// --- 1. STATEFUL COMPOSABLE (Logika Data & Navigasi) ---
 @Composable
 fun MoodRecapScreen(
     navController: NavHostController,
@@ -36,20 +39,29 @@ fun MoodRecapScreen(
 ) {
     val context = LocalContext.current
 
-    // Mengambil data mood hari ini
     val todayMood = remember { MoodDataManager.getTodayMood(context, userEmail) }
-
-    // Mengambil statistik 7 hari terakhir
     val stats = remember { MoodDataManager.getMoodStats(context, userEmail, 7) }
 
-    // Memanggil UI Content
     MoodRecapContent(
         todayMood = todayMood,
         stats = stats,
         onBackClick = { navController.navigateUp() },
         onHistoryClick = { navController.navigate("mood_history/$userEmail") },
-        // Asumsi rute self care, sesuaikan jika berbeda
-        onSelfCareClick = { navController.navigate("self_care") }
+
+        // PERBAIKAN DI SINI: Navigasi ala Bottom Bar
+        onSelfCareClick = {
+            navController.navigate(Routes.SELF_CARE) {
+                // 1. Hapus tumpukan back stack sampai ke start destination (Home)
+                // agar tombol Back di SelfCare membawa ke Home, bukan MoodRecap
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                // 2. Hindari duplikasi halaman jika diklik berkali-kali
+                launchSingleTop = true
+                // 3. Restore state halaman SelfCare jika sebelumnya sudah dibuka
+                restoreState = true
+            }
+        }
     )
 }
 
