@@ -37,10 +37,22 @@ import androidx.compose.material.icons.filled.AddCircle
 import com.kelompok4.serena.data.Mood
 import com.kelompok4.serena.data.MoodDataManager
 import com.kelompok4.serena.data.MoodTypes
+import com.kelompok4.serena.data.UserDataManager
 
 @Composable
 fun HomeScreen(navController: NavController, userEmail: String) {
     val context = LocalContext.current
+
+    // Ambil nama lengkap user dari firestore (suspend) menggunakan produceState
+    val fullNameState by produceState<String?>(initialValue = null, key1 = userEmail) {
+        try {
+            val user = UserDataManager.getUserByEmail(userEmail)
+            value = user?.fullName
+        } catch (e: Exception) {
+            e.printStackTrace()
+            value = null
+        }
+    }
 
     // 1. STATE HOISTING: Ambil data mood di sini
     val todayMood by produceState<Mood?>(initialValue = null, key1 = userEmail) {
@@ -61,7 +73,8 @@ fun HomeScreen(navController: NavController, userEmail: String) {
             HeaderSection(
                 navController = navController,
                 userEmail = userEmail,
-                currentMood = todayMood
+                currentMood = todayMood,
+                fullName = fullNameState
             )
             HomeContent(navController = navController, userEmail = userEmail)
         }
@@ -75,7 +88,8 @@ fun HomeScreen(navController: NavController, userEmail: String) {
             HeaderSection(
                 navController = navController,
                 userEmail = userEmail,
-                currentMood = null
+                currentMood = null,
+                fullName = fullNameState
             )
             Column(
                 modifier = Modifier
@@ -88,7 +102,7 @@ fun HomeScreen(navController: NavController, userEmail: String) {
     }
 }
 
-// Komponen Konten Body
+// Komponen Konten Body (tidak berubah)
 @Composable
 fun HomeContent(navController: NavController, userEmail: String) {
     Column(
@@ -114,11 +128,13 @@ fun HomeContent(navController: NavController, userEmail: String) {
     }
 }
 
+// HeaderSection sekarang menerima fullName (nullable)
 @Composable
 fun HeaderSection(
     navController: NavController,
     userEmail: String,
-    currentMood: Mood?
+    currentMood: Mood?,
+    fullName: String?
 ) {
     Column(
         modifier = Modifier
@@ -141,8 +157,15 @@ fun HeaderSection(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
+                // menentukan nama yang ditampilkan:
+                val displayName = when {
+                    !fullName.isNullOrBlank() -> fullName
+                    userEmail.isNotBlank() -> userEmail.substringBefore("@")
+                    else -> "User"
+                }
+
                 Text(
-                    text = "Halo, Ahsana Iklila",
+                    text = "Halo, $displayName",
                     style = AppTypography.Body1.regular
                 )
             }

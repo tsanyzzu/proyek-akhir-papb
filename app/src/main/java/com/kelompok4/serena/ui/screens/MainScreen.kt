@@ -193,8 +193,12 @@ fun NavigationGraph(
         }
 
         // Success Profile Screen
-        composable("success_profile") {
-            SuccessProfileScreen(navController = navController)
+        composable(
+            route = "success_profile/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            SuccessProfileScreen(navController = navController, userEmail = email)
         }
 
         // ========== JOURNAL ROUTES ==========

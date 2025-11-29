@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
 
 @Composable
@@ -140,7 +141,13 @@ fun EditValueScreen(
                             isSaving = false
                             if (success) {
                                 Toast.makeText(context, "Username berhasil diubah", Toast.LENGTH_SHORT).show()
-                                navController.popBackStack()
+                                navController.navigate("success_profile/$userEmail") {
+                                    // optional: clear/optimize backstack (ke start destination)
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+
                             } else {
                                 Toast.makeText(context, message ?: "Gagal mengubah username", Toast.LENGTH_LONG).show()
                             }
@@ -152,7 +159,13 @@ fun EditValueScreen(
                             isSaving = false
                             if (success) {
                                 Toast.makeText(context, "Nama berhasil diubah", Toast.LENGTH_SHORT).show()
-                                navController.popBackStack()
+                                navController.navigate("success_profile/$userEmail") {
+                                    // optional: clear/optimize backstack (ke start destination)
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+
                             } else {
                                 Toast.makeText(context, message ?: "Gagal mengubah nama", Toast.LENGTH_LONG).show()
                             }
@@ -165,7 +178,12 @@ fun EditValueScreen(
                             isSaving = false
                             if (success) {
                                 Toast.makeText(context, "Email berhasil diubah", Toast.LENGTH_SHORT).show()
-                                navController.popBackStack()
+                                navController.navigate("success_profile/$userEmail") {
+                                    // optional: clear/optimize backstack (ke start destination)
+                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             } else {
                                 // jika butuh reauth dan password kosong, message akan menjelaskan
                                 Toast.makeText(context, message ?: "Gagal mengubah email", Toast.LENGTH_LONG).show()
