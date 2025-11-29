@@ -1,11 +1,13 @@
 package com.kelompok4.serena.ui.viewmodel
 
-import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.kelompok4.serena.R
+import androidx.lifecycle.viewModelScope
 import com.kelompok4.serena.data.User
 import com.kelompok4.serena.data.UserDataManager
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class RegisterViewModel : ViewModel() {
     val fullName = mutableStateOf("")
@@ -24,7 +26,14 @@ class RegisterViewModel : ViewModel() {
     fun togglePasswordVisibility() { isPasswordVisible.value = !isPasswordVisible.value }
     fun toggleConfirmPasswordVisibility() { isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value }
 
-    fun onRegisterClick(context: Context, onSuccess: () -> Unit, onError: (String) -> Unit) {
+    /**
+     * Registrasi user:
+     * - validasi input
+     * - cek email terdaftar
+     * - cek username unik (query ke Firestore)
+     * - panggil UserDataManager.registerUser(...)
+     */
+    fun onRegisterClick(onSuccess: () -> Unit, onError: (String) -> Unit) {
         val name = fullName.value.trim()
         val mail = email.value.trim()
         val pass = password.value
@@ -40,16 +49,47 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
+        // generate username sederhana (bisa ganti logika username sesuai kebutuhan)
         val username = mail.substringBefore("@")
-        val newUser = User(
-            fullName = name,
-            email = mail,
-            username = username,
-            password = pass,
-            profilePictureRes = R.drawable.default_profile // default dari drawable
-        )
 
-        val success = UserDataManager.registerUser(context, newUser)
-        if (success) onSuccess() else onError("Email sudah terdaftar!")
+        viewModelScope.launch {
+            try {
+                // cek apakah email sudah ada
+                val existing = UserDataManager.getUserByEmail(mail)
+                if (existing != null) {
+                    onError("Email sudah terdaftar!")
+                    return@launch
+                }
+
+                // cek apakah username sudah dipakai (query ke Firestore)
+                val db = FirebaseFirestore.getInstance()
+                val usernameQuery = db.collection("users")
+                    .whereEqualTo("username", username)
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (usernameQuery.documents.isNotEmpty()) {
+                    onError("Username '$username' sudah dipakai. Coba variasi lain.")
+                    return@launch
+                }
+
+                // panggil register di UserDataManager
+                val success = UserDataManager.registerUser(
+                    email = mail,
+                    password = pass,
+                    fullName = name,
+                    username = username
+                )
+
+                if (success) {
+                    onSuccess()
+                } else {
+                    onError("Gagal registrasi. Coba lagi.")
+                }
+            } catch (e: Exception) {
+                onError(e.message ?: "Terjadi kesalahan saat registrasi.")
+            }
+        }
     }
 }
