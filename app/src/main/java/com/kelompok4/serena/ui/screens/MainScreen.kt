@@ -286,6 +286,12 @@ fun NavigationGraph(
             DoctorDetailScreen(navController = navController)
         }
 
+        // Video Detail Screen
+        composable("videoDetail/{id}") { backStackEntry ->
+            val videoId = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
+            VideoDetailScreen(navController = navController, videoId = videoId)
+        }
+
 
     }
 }
