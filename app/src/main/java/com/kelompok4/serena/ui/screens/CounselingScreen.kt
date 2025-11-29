@@ -116,7 +116,7 @@ fun TaglineBanner() {
             .height(120.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF2D7D5F)
+            containerColor = Color(0xFF368743)
         )
     ) {
         Row(

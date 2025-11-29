@@ -7,7 +7,7 @@ val Primary50 = Color(0xFFEBF3EC)
 val Primary100 = Color(0xFFC1DAC5)
 val Primary300 = Color(0xFF78AF81)
 val Primary500 = Color(0xFF368743)
-val Primary700 = Color(0xFF266030)
+    val Primary700 = Color(0xFF266030)
 val Primary900 = Color(0xFF17391C)
 
 // --- Palet Warna Secondary Baru ---
