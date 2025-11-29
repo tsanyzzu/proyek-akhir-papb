@@ -42,9 +42,16 @@ android {
 }
 
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+
+    // Firebase
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("io.coil-kt:coil-compose:2.3.0")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.material.icons.extended)
@@ -62,6 +69,7 @@ dependencies {
     // Media3 ExoPlayer for video playback
     implementation("androidx.media3:media3-exoplayer:1.5.1")
     implementation("androidx.media3:media3-ui:1.5.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -69,5 +77,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

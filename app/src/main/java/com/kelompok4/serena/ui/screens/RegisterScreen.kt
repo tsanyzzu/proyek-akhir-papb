@@ -182,7 +182,6 @@ fun RegisterScreen(
                 text = "Daftar",
                 onClick = {
                     viewModel.onRegisterClick(
-                        context = context,
                         onSuccess = {
                             Toast.makeText(context, "Registrasi berhasil! Silakan login.", Toast.LENGTH_SHORT).show()
                             navController.popBackStack()
