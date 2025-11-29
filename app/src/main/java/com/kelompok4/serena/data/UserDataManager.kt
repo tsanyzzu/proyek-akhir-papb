@@ -1,55 +1,97 @@
 package com.kelompok4.serena.data
 
-import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.io.File
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.Timestamp
+import kotlinx.coroutines.tasks.await
 
 object UserDataManager {
-    private const val FILE_NAME = "users.json"
+    private val auth = FirebaseAuth.getInstance()
+    private val db = FirebaseFirestore.getInstance()
 
-    private fun getFile(context: Context): File {
-        return File(context.filesDir, FILE_NAME)
-    }
+    // ================================
+    // REGISTER USER (AUTH + FIRESTORE)
+    // ================================
+    suspend fun registerUser(
+        email: String,
+        password: String,
+        fullName: String,
+        username: String
+    ): Boolean {
+        return try {
+            // 1. Buat akun di Firebase Authentication
+            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            val uid = result.user?.uid ?: return false
 
-    private fun readUsers(context: Context): MutableList<User> {
-        val file = getFile(context)
-        if (!file.exists()) return mutableListOf()
-        val json = file.readText()
-        if (json.isEmpty()) return mutableListOf()
-        val type = object : TypeToken<MutableList<User>>() {}.type
-        return Gson().fromJson(json, type)
-    }
+            // 2. Buat data user untuk Firestore
+            val user = User(
+                fullName = fullName,
+                username = username,
+                email = email,
+                createdAt = Timestamp.now(),
+                updatedAt = Timestamp.now()
+            )
 
-    private fun writeUsers(context: Context, users: List<User>) {
-        val file = getFile(context)
-        val json = Gson().toJson(users)
-        file.writeText(json)
-    }
+            // 3. Simpan ke Firestore di /users/{uid}
+            db.collection("users")
+                .document(uid)
+                .set(user)
+                .await()
 
-    fun registerUser(context: Context, user: User): Boolean {
-        val users = readUsers(context)
-        if (users.any { it.email == user.email }) return false // email sudah terdaftar
-        users.add(user)
-        writeUsers(context, users)
-        return true
-    }
+            true
 
-    fun loginUser(context: Context, email: String, password: String): User? {
-        val users = readUsers(context)
-        return users.find { it.email == email && it.password == password }
-    }
-
-    fun updateUser(context: Context, updatedUser: User) {
-        val users = readUsers(context)
-        val index = users.indexOfFirst { it.email == updatedUser.email }
-        if (index != -1) {
-            users[index] = updatedUser
-            writeUsers(context, users)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 
-    fun getUserByEmail(context: Context, email: String): User? {
-        return readUsers(context).find { it.email == email }
+    // ================================
+    // LOGIN USER
+    // ================================
+    suspend fun loginUser(email: String, password: String): Boolean {
+        return try {
+            auth.signInWithEmailAndPassword(email, password).await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    // ================================
+    // UPDATE USER DATA
+    // ================================
+    suspend fun updateUser(
+        uid: String,
+        newData: Map<String, Any>
+    ): Boolean {
+        return try {
+            db.collection("users")
+                .document(uid)
+                .update(newData + ("updatedAt" to Timestamp.now()))
+                .await()
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    // ================================
+    // GET USER BY EMAIL
+    // ================================
+    suspend fun getUserByEmail(email: String): User? {
+        return try {
+            val query = db.collection("users")
+                .whereEqualTo("email", email)
+                .limit(1)
+                .get()
+                .await()
+
+            if (query.isEmpty) null
+            else query.documents[0].toObject(User::class.java)
+
+        } catch (e: Exception) {
+            null
+        }
     }
 }

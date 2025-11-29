@@ -24,9 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kelompok4.serena.R
-import com.kelompok4.serena.data.MoodDataManager // Pastikan import ini ada
+import com.kelompok4.serena.data.MoodDataManager
 import com.kelompok4.serena.ui.theme.*
 import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
+import coil.compose.AsyncImage
 
 @Composable
 fun ProfileScreen(
@@ -37,7 +38,10 @@ fun ProfileScreen(
     val context = LocalContext.current
     val user by vm.user.collectAsState()
 
-    LaunchedEffect(userEmail) { vm.loadUser(context, userEmail) }
+    // load user saat email berubah
+    LaunchedEffect(userEmail) {
+        vm.loadUserByEmail(userEmail)
+    }
 
     Column(
         modifier = Modifier
@@ -49,18 +53,31 @@ fun ProfileScreen(
 
         // Header profile
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.default_profile),
-                contentDescription = "Profile Picture",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(CircleShape)
-                    .border(1.dp, Color.Gray, CircleShape)
-            )
+            if (!user?.profilePhotoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = user?.profilePhotoUrl,
+                    contentDescription = "Profile Picture",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.Gray, CircleShape)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.default_profile),
+                    contentDescription = "Profile Picture",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.Gray, CircleShape)
+                )
+            }
+
             Spacer(Modifier.width(12.dp))
             Column {
-                val usernameFromEmail = user?.email?.substringBefore("@") ?: "-"
+                val usernameFromEmail = user?.username ?: user?.email?.substringBefore("@") ?: "-"
                 Text(text = usernameFromEmail, style = AppTypography.H6.bold)
                 Spacer(Modifier.height(4.dp))
                 Text(text = user?.email ?: "-", style = AppTypography.Subtitle2.regular, color = GrayText)
@@ -88,6 +105,7 @@ fun ProfileScreen(
                     subtitle = "Atur informasi pribadi",
                     iconRes = R.drawable.ic_profile_card
                 ) {
+                    // Pastikan route menampung param userEmail
                     navController.navigate("profile_detail/${userEmail}")
                 }
             }
@@ -114,7 +132,7 @@ fun ProfileScreen(
 
         Spacer(Modifier.weight(1f))
 
-        // --- TOMBOL RESET DATA MOOD (BARU) ---
+        // Reset Data Mood
         Button(
             onClick = {
                 val success = MoodDataManager.clearAllMoods(context)
@@ -128,7 +146,7 @@ fun ProfileScreen(
                 .fillMaxWidth()
                 .height(48.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFFFA000), // Warna oranye sebagai peringatan (bisa diganti)
+                containerColor = Color(0xFFFFA000),
                 contentColor = Color.White
             ),
             shape = RoundedCornerShape(8.dp)
@@ -138,9 +156,12 @@ fun ProfileScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        // Tombol keluar
+        // Tombol keluar (logout)
         Button(
-            onClick = { /* Logout flow */ },
+            onClick = {
+                // lakukan logout: misalnya FirebaseAuth.getInstance().signOut()
+                // lalu navigasi ke layar login
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),

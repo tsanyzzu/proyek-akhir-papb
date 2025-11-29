@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1021795168890",
+    "project_id": "serena-papb",
+    "storage_bucket": "serena-papb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1021795168890:android:d2346707eb61a50a1681c3",
+        "android_client_info": {
+          "package_name": "com.kelompok4.serena"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvaExmwYRlNsYSWyqmlgZqN1FmBzosu8k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
