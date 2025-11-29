@@ -41,6 +41,8 @@ android {
 }
 
 dependencies {
+    implementation("androidx.media3:media3-exoplayer:1.2.0") // Or latest version
+    implementation("androidx.media3:media3-ui:1.2.0")
     implementation("com.google.code.gson:gson:2.11.0")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.animation)
