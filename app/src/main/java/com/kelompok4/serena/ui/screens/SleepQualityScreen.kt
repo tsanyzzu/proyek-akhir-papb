@@ -262,7 +262,7 @@ fun SleepQualityScreen(navController: NavHostController) {
                     text = "Alarm Sehat",
                     style = AppTypography.H5.bold
                 )
-                IconButton(onClick = { /* TODO: handle add alarm */ }) {
+                IconButton(onClick = { navController.navigate(Routes.AddAlarm) }) {
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = "Tambah Alarm",
