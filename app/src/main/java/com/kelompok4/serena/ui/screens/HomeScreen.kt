@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,33 +18,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination // IMPORT PENTING
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
-import com.kelompok4.serena.ui.navigation.Routes
 import com.kelompok4.serena.R
-import com.kelompok4.serena.data.JournalDataManager
+import com.kelompok4.serena.data.*
+import com.kelompok4.serena.ui.navigation.Routes
 import com.kelompok4.serena.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.material.icons.filled.AddCircle
-import com.kelompok4.serena.data.Mood
-import com.kelompok4.serena.data.MoodDataManager
-import com.kelompok4.serena.data.MoodTypes
-import com.kelompok4.serena.data.UserDataManager
 
 @Composable
 fun HomeScreen(navController: NavController, userEmail: String) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scrollState = rememberScrollState()
 
-    // Ambil nama lengkap user dari firestore (suspend) menggunakan produceState
+    // Ambil nama user (tetap pakai produceState karena jarang berubah)
     val fullNameState by produceState<String?>(initialValue = null, key1 = userEmail) {
         try {
             val user = UserDataManager.getUserByEmail(userEmail)
@@ -54,16 +53,36 @@ fun HomeScreen(navController: NavController, userEmail: String) {
         }
     }
 
-    // 1. STATE HOISTING: Ambil data mood di sini
-    val todayMood by produceState<Mood?>(initialValue = null, key1 = userEmail) {
-        value = MoodDataManager.getTodayMood(context, userEmail)
+    var currentMood by remember { mutableStateOf<Mood?>(null) }
+
+    LaunchedEffect(Unit) {
+        try {
+            currentMood = MoodDataManager.getLatestMood(context, userEmail)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
+    // Lifecycle Observer: Akan jalan setiap kali layar Home 'RESUME' (muncul kembali)
+    // --- PERBAIKAN 2: Load ulang saat KEMBALI ke halaman ini (Resume) ---
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                try {
+                    currentMood = MoodDataManager.getLatestMood(context, userEmail)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+    // ------------------------------------------------
 
-    val scrollState = rememberScrollState()
-
-    // 2. LOGIKA KONDISIONAL SCROLL
-    if (todayMood != null) {
-        // KONDISI A: SUDAH ADA MOOD -> Header IKUT SCROLL
+    // Logika UI (Sama seperti sebelumnya)
+    if (currentMood != null) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,13 +92,12 @@ fun HomeScreen(navController: NavController, userEmail: String) {
             HeaderSection(
                 navController = navController,
                 userEmail = userEmail,
-                currentMood = todayMood,
+                currentMood = currentMood,
                 fullName = fullNameState
             )
             HomeContent(navController = navController, userEmail = userEmail)
         }
     } else {
-        // KONDISI B: BELUM ADA MOOD -> Header TETAP (FIXED)
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -102,7 +120,7 @@ fun HomeScreen(navController: NavController, userEmail: String) {
     }
 }
 
-// Komponen Konten Body (tidak berubah)
+// Komponen Konten Body (TIDAK BERUBAH)
 @Composable
 fun HomeContent(navController: NavController, userEmail: String) {
     Column(
@@ -114,7 +132,6 @@ fun HomeContent(navController: NavController, userEmail: String) {
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Mengirim navController ke OneOnOneCard
         OneOnOneCard(navController = navController)
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -128,7 +145,7 @@ fun HomeContent(navController: NavController, userEmail: String) {
     }
 }
 
-// HeaderSection sekarang menerima fullName (nullable)
+// HeaderSection (DIPERBARUI)
 @Composable
 fun HeaderSection(
     navController: NavController,
@@ -157,7 +174,7 @@ fun HeaderSection(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-                // menentukan nama yang ditampilkan:
+                // Menentukan nama yang ditampilkan
                 val displayName = when {
                     !fullName.isNullOrBlank() -> fullName
                     userEmail.isNotBlank() -> userEmail.substringBefore("@")
@@ -190,7 +207,7 @@ fun HeaderSection(
 
         // --- Bagian Konten Utama ---
         if (currentMood != null) {
-            // === KONDISI: SUDAH ADA MOOD (Tampilan Card) ===
+            // === KONDISI A: SUDAH ADA MOOD (Tampilan Card Mood Terakhir) ===
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -198,7 +215,8 @@ fun HeaderSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Mood Kamu Hari Ini",
+                        // Menggunakan "Mood Terakhir" agar lebih akurat dengan data getLatestMood
+                        text = "Mood Terakhir Kamu",
                         style = AppTypography.H4.bold
                     )
                     // Tombol Ganti Mood
@@ -257,7 +275,7 @@ fun HeaderSection(
                 }
             }
         } else {
-            // === KONDISI: BELUM ADA MOOD (Tampilan Icon) ===
+            // === KONDISI B: BELUM ADA MOOD (Tampilan Icon Pilihan) ===
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -289,7 +307,7 @@ fun HeaderSection(
     }
 }
 
-// ... (MoodIcon Tetap Sama)
+// MoodIcon (TIDAK BERUBAH)
 @Composable
 fun MoodIcon(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -314,6 +332,18 @@ fun MoodIcon(
     }
 }
 
+fun getMoodDescription(moodName: String): String {
+    return when (moodName) {
+        MoodTypes.GEMBIRA -> "Energi positifmu menular! Manfaatkan hari ini untuk hal produktif."
+        MoodTypes.SEDIH -> "Tidak apa-apa merasa sedih. Ambil waktu sejenak untuk dirimu sendiri."
+        MoodTypes.NETRAL -> "Hari yang tenang. Jalani dengan santai dan tetap fokus."
+        MoodTypes.MARAH -> "Tarik napas dalam-dalam. Tenangkan pikiran sebelum bertindak."
+        MoodTypes.DEPRESI -> "Kamu tidak sendirian. Jangan ragu mencari dukungan jika perlu."
+        else -> "Tetap semangat menjalani hari ini!"
+    }
+}
+
+// OneOnOneCard (TIDAK BERUBAH)
 @Composable
 fun OneOnOneCard(navController: NavController) {
     Card(
@@ -338,10 +368,8 @@ fun OneOnOneCard(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // PERBAIKAN UTAMA: Navigasi seperti Bottom Bar
                 TextButton(onClick = {
                     navController.navigate(Routes.KONSELING) {
-                        // Reset stack ke start destination (Home) agar back button konsisten
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
@@ -367,7 +395,7 @@ fun OneOnOneCard(navController: NavController) {
     }
 }
 
-// ... (Sisa fungsi: SerenaScoreCard, JournalSection, SleepQualitySection, dll TETAP SAMA)
+// SerenaScoreCard (TIDAK BERUBAH)
 @Composable
 fun SerenaScoreCard() {
     Card(
@@ -429,11 +457,13 @@ fun SerenaScoreCard() {
     }
 }
 
+// JournalSection (TIDAK BERUBAH - hanya auto-refresh mood, jurnal perlu logic serupa jika mau auto-refresh)
 @Composable
 fun JournalSection(navController: NavController, userEmail: String) {
     val context = LocalContext.current
     var latestJournal by remember { mutableStateOf<com.kelompok4.serena.data.Journal?>(null) }
 
+    // Logic refresh jurnal (Opsional: bisa ditambahkan LifecycleObserver juga jika perlu)
     LaunchedEffect(Unit) {
         latestJournal = JournalDataManager.getLatestJournal(context, userEmail)
     }
@@ -531,6 +561,7 @@ fun JournalSection(navController: NavController, userEmail: String) {
     }
 }
 
+// SleepQualitySection (TIDAK BERUBAH)
 @Composable
 fun SleepQualitySection(navController: NavController) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -618,18 +649,6 @@ fun SectionHeader(title: String, onSeeAllClick: () -> Unit) {
         }
     }
 }
-
-fun getMoodDescription(moodName: String): String {
-    return when (moodName) {
-        MoodTypes.GEMBIRA -> "Energi positifmu menular! Manfaatkan hari ini untuk hal produktif."
-        MoodTypes.SEDIH -> "Tidak apa-apa merasa sedih. Ambil waktu sejenak untuk dirimu sendiri."
-        MoodTypes.NETRAL -> "Hari yang tenang. Jalani dengan santai dan tetap fokus."
-        MoodTypes.MARAH -> "Tarik napas dalam-dalam. Tenangkan pikiran sebelum bertindak."
-        MoodTypes.DEPRESI -> "Kamu tidak sendirian. Jangan ragu mencari dukungan jika perlu."
-        else -> "Tetap semangat menjalani hari ini!"
-    }
-}
-
 @Preview(showBackground = true, widthDp = 360, heightDp = 1200)
 @Composable
 fun HomeScreenPreview() {

@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.kelompok4.serena.data.Mood
 import com.kelompok4.serena.data.MoodDataManager
 import com.kelompok4.serena.data.MoodStats
@@ -38,29 +37,36 @@ fun MoodRecapScreen(
 ) {
     val context = LocalContext.current
 
-    // PERUBAHAN: Menggunakan produceState untuk memuat data
-    // 'produceState' akan memicu pembacaan data setiap kali Screen ini masuk ke komposisi (ditampilkan)
-    // Ini memastikan data diambil dari FILE (JSON) yang persisten, bukan hanya dari memori cache.
-
+    // Memuat data mood hari ini
     val todayMood by produceState<Mood?>(initialValue = null, key1 = userEmail) {
-        // Membaca mood hari ini dari MoodDataManager
-        // Karena MoodDataManager membaca file JSON, data akan tetap ada meski aplikasi direstart
-        value = MoodDataManager.getTodayMood(context, userEmail)
+        // Gunakan getLatestMood agar konsisten mengambil data terakhir yang baru diinput
+        value = MoodDataManager.getLatestMood(context, userEmail)
     }
 
+    // Memuat statistik
     val stats by produceState(initialValue = MoodStats(), key1 = userEmail) {
-        // Membaca statistik terbaru
         value = MoodDataManager.getMoodStats(context, userEmail, 7)
     }
 
     MoodRecapContent(
         todayMood = todayMood,
         stats = stats,
-        onBackClick = { navController.navigateUp() },
+        // PERBAIKAN NAVIGASI:
+        // Saat tombol Back ditekan, kita paksa kembali ke HOME dan hapus history navigasi sebelumnya
+        // (sehingga user tidak kembali ke form input mood)
+        onBackClick = {
+            navController.navigate(Routes.HOME) {
+                // Reset stack sampai ke Home (Start Destination)
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        },
         onHistoryClick = { navController.navigate("mood_history/$userEmail") },
         onSelfCareClick = {
             navController.navigate(Routes.SELF_CARE) {
-                // Navigasi ke Tab SelfCare dengan benar (reset back stack)
                 popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }
@@ -71,7 +77,7 @@ fun MoodRecapScreen(
     )
 }
 
-// --- 2. STATELESS COMPOSABLE (Tampilan UI - Tidak Berubah) ---
+// --- 2. STATELESS COMPOSABLE (Tampilan UI) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoodRecapContent(
@@ -81,7 +87,7 @@ fun MoodRecapContent(
     onHistoryClick: () -> Unit,
     onSelfCareClick: () -> Unit
 ) {
-    // Menentukan warna background berdasarkan mood (dengan fallback jika null)
+    // Menentukan warna background
     val moodColor = remember(todayMood) {
         todayMood?.let {
             try {
@@ -109,13 +115,13 @@ fun MoodRecapContent(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Kembali",
+                            contentDescription = "Kembali ke Beranda",
                             tint = Color.Black
                         )
                     }
                 },
                 actions = {
-                    Spacer(modifier = Modifier.width(48.dp))
+                    Spacer(modifier = Modifier.width(48.dp)) // Penyeimbang layout title center
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent
@@ -130,7 +136,7 @@ fun MoodRecapContent(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 1. KONTEN UTAMA (Scrollable)
+            // KONTEN UTAMA (Scrollable)
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -179,16 +185,13 @@ fun MoodRecapContent(
                         }
                     }
                 } else {
-                    // Tampilan jika data mood belum ada (misal hari sudah berganti)
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Box(
-                            modifier = Modifier
-                                .padding(32.dp)
-                                .fillMaxWidth(),
+                            modifier = Modifier.padding(32.dp).fillMaxWidth(),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -209,9 +212,7 @@ fun MoodRecapContent(
                     colors = CardDefaults.cardColors(containerColor = Primary50)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(
@@ -221,17 +222,11 @@ fun MoodRecapContent(
                                 .background(Primary500),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "🎯",
-                                fontSize = 32.sp
-                            )
+                            Text(text = "🎯", fontSize = 32.sp)
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text(
-                                text = "Yuk, cek Riwayat Mood kamu!",
-                                style = AppTypography.Body1.bold
-                            )
+                            Text(text = "Yuk, cek Riwayat Mood kamu!", style = AppTypography.Body1.bold)
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Lihat pola perasaanmu dalam seminggu terakhir.",
@@ -249,20 +244,12 @@ fun MoodRecapContent(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Statistik Mood (7 Hari)",
-                            style = AppTypography.H6.bold
-                        )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(text = "Statistik Mood (7 Hari)", style = AppTypography.H6.bold)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Mood Icons Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                             listOf("😊", "😢", "😐", "😠", "😭").forEach { emoji ->
                                 Text(text = emoji, fontSize = 24.sp)
                             }
@@ -278,14 +265,7 @@ fun MoodRecapContent(
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.Bottom
                         ) {
-                            val maxValue = maxOf(
-                                stats.gembirCount,
-                                stats.sedihCount,
-                                stats.netralCount,
-                                stats.marahCount,
-                                stats.depresiCount,
-                                1
-                            )
+                            val maxValue = maxOf(stats.gembirCount, stats.sedihCount, stats.netralCount, stats.marahCount, stats.depresiCount, 1)
 
                             listOf(
                                 stats.gembirCount to Secondary500,
@@ -308,11 +288,10 @@ fun MoodRecapContent(
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // 2. TOMBOL FIXED (SelfCare)
+            // TOMBOL FIXED (SelfCare) - Opsional, jika ingin navigasi ke SelfCare
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -324,9 +303,7 @@ fun MoodRecapContent(
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Primary500
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary500),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Lihat SelfCare", style = AppTypography.Subtitle2.bold)
@@ -340,27 +317,8 @@ fun MoodRecapContent(
 @Composable
 fun MoodRecapScreenPreview() {
     ProyekakhirpapbTheme {
-        val dummyMood = Mood(
-            moodName = MoodTypes.GEMBIRA,
-            moodEmoji = "😊",
-            userEmail = "test@example.com"
-        )
-
-        val dummyStats = MoodStats(
-            totalMoods = 10,
-            gembirCount = 5,
-            sedihCount = 2,
-            netralCount = 2,
-            marahCount = 1,
-            depresiCount = 0
-        )
-
-        MoodRecapContent(
-            todayMood = dummyMood,
-            stats = dummyStats,
-            onBackClick = {},
-            onHistoryClick = {},
-            onSelfCareClick = {}
-        )
+        val dummyMood = Mood(moodName = MoodTypes.GEMBIRA, moodEmoji = "😊", userEmail = "test@example.com")
+        val dummyStats = MoodStats(10, 5, 2, 2, 1, 0)
+        MoodRecapContent(dummyMood, dummyStats, {}, {}, {})
     }
 }

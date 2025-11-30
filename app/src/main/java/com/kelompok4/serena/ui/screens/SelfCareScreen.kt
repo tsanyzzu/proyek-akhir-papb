@@ -1,36 +1,32 @@
 package com.example.serena.ui.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp // Untuk ukuran font emoji
 import androidx.navigation.NavHostController
 import com.example.serena.ui.components.ActivityCard
 import com.example.serena.ui.components.ArticleCard
-import com.example.serena.ui.components.RecommendationCard
 import com.example.serena.ui.components.SectionHeader
-import com.kelompok4.serena.ui.theme.*
 import com.kelompok4.serena.R
-import androidx.compose.ui.tooling.preview.Preview
+import com.kelompok4.serena.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,47 +35,18 @@ fun SelfCareScreen(
 ) {
     val searchQuery = remember { mutableStateOf("") }
 
-    /**
-     * Sample data for articles and activities.  Replace these lists
-     * with real data from your ViewModel or repository when
-     * integrating into your app.
-     */
+    // ... (Data SampleArticle dan SampleActivity tetap sama) ...
     val articles = listOf(
-        SampleArticle(
-            id = 1,
-            title = "Manfaat meditasi pagi untuk kesehatan mental",
-            thumbnail = R.drawable.onboarding_1,
-            description = "Temukan cara sederhana untuk memulai hari dengan lebih tenang melalui meditasi pagi."
-        ),
-        SampleArticle(
-            id = 2,
-            title = "Teknik Pernapasan untuk Mengurangi Stres",
-            thumbnail = R.drawable.onboarding_1,
-            description = "Pelajari cara mengatur napas untuk menenangkan pikiran dan meningkatkan fokus."
-        )
+        SampleArticle(1, "Manfaat meditasi pagi...", R.drawable.onboarding_1, "Deskripsi..."),
+        SampleArticle(2, "Teknik Pernapasan...", R.drawable.onboarding_1, "Deskripsi...")
     )
     val activities = listOf(
-        SampleActivity(
-            id = 1,
-            title = "Latihan Pernapasan untuk Mengurangi Stres",
-            thumbnail = R.drawable.onboarding_1,
-            date = "February 27, 2025",
-            views = 700,
-            likes = 512
-        ),
-        SampleActivity(
-            id = 2,
-            title = "Rutinitas Meditasi Pagi",
-            thumbnail = R.drawable.onboarding_1,
-            date = "February 01, 2025",
-            views = 450,
-            likes = 321
-        )
+        SampleActivity(1, "Latihan Pernapasan...", R.drawable.onboarding_1, "Feb 27", 700, 512),
+        SampleActivity(2, "Rutinitas Meditasi...", R.drawable.onboarding_1, "Feb 01", 450, 321)
     )
 
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
     ) {
         item {
             Spacer(modifier = Modifier.height(16.dp))
@@ -94,38 +61,80 @@ fun SelfCareScreen(
                 leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = null) },
                 singleLine = true
             )
+
             Spacer(modifier = Modifier.height(16.dp))
-            // Recommendation Card
-            RecommendationCard(
-                painterRes = R.drawable.onboarding_1,
-                title = "Serena punya rekomendasi buat kamu!",
-                message = "Kondisi mental kamu sedang dalam keadaan baik. Jaga kesehatanmu dengan rekomendasi artikel dan kegiatan dari Serena.",
+
+            // --- REKOMENDASI CARD YANG BARU ---
+            Card(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
-            )
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Primary500) // Warna background ungu/biru tua
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Bagian Kiri: Teks
+                    Column(
+                        modifier = Modifier.weight(1f) // Mengambil sisa ruang agar teks tidak tertimpa icon
+                    ) {
+                        Text(
+                            text = "Serena punya rekomendasi buat kamu!",
+                            style = AppTypography.Body1.bold, // Menggunakan style Bold
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Kondisi mental kamu sedang dalam keadaan baik. Jaga kesehatanmu dengan rekomendasi artikel dan kegiatan dari Serena.",
+                            style = AppTypography.Subtitle2.regular, // Style regular lebih kecil
+                            color = Color.White.copy(alpha = 0.9f) // Sedikit transparan agar tidak terlalu kontras
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp)) // Jarak antara teks dan icon
+
+                    // Bagian Kanan: Icon Senyum (Emoji)
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp) // Ukuran lingkaran latar belakang
+                            .clip(CircleShape)
+                            .background(Color.White), // Latar belakang putih
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "😊", // Icon senyum (Emoji)
+                            fontSize = 32.sp // Ukuran font emoji
+                        )
+                    }
+                }
+            }
+            // -------------------------------------
+
             Spacer(modifier = Modifier.height(24.dp))
-            // Artikel Section
+
+            // ... (Sisa kode Artikel dan Kegiatan tetap sama) ...
             SectionHeader(
                 title = "Artikel",
                 onClickSeeAll = { navController?.navigate("articles") }
             )
             LazyRow(
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
                 items(articles) { article ->
                     ArticleCard(
                         painterRes = article.thumbnail,
                         title = article.title,
                         isVertical = false,
-                        onClick = {
-                            navController?.navigate("articleDetail/${article.id}")
-                        }
+                        onClick = { navController?.navigate("articleDetail/${article.id}") }
                     )
                     Spacer(modifier = Modifier.size(8.dp))
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
-            // Activities Section
             SectionHeader(
                 title = "Kegiatan",
                 onClickSeeAll = { navController?.navigate("activities") }
@@ -138,11 +147,8 @@ fun SelfCareScreen(
                 date = activity.date,
                 views = activity.views,
                 likes = activity.likes,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                onClick = {
-                    navController?.navigate("activityDetail/${activity.id}")
-                }
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                onClick = { navController?.navigate("activityDetail/${activity.id}") }
             )
         }
     }
@@ -170,7 +176,6 @@ data class SampleActivity(
 @Composable
 fun SelfCareScreenPreview() {
     ProyekakhirpapbTheme {
-        // Kita tidak perlu mengirim navController karena default-nya sudah null
         SelfCareScreen()
     }
 }

@@ -64,7 +64,6 @@ object MoodDataManager {
     // Mengecek apakah hari ini sudah ada mood yang tersimpan
     fun getTodayMood(context: Context, userEmail: String): Mood? {
         val today = Calendar.getInstance()
-        // Reset jam ke 00:00:00 untuk membandingkan hari
         today.set(Calendar.HOUR_OF_DAY, 0)
         today.set(Calendar.MINUTE, 0)
         today.set(Calendar.SECOND, 0)
@@ -79,7 +78,8 @@ object MoodDataManager {
 
         return readMoods(context)
             .filter { it.userEmail == userEmail }
-            .find { it.date in startOfDay until endOfDay }
+            .filter { it.date in startOfDay until endOfDay } // Ambil semua mood hari ini
+            .maxByOrNull { it.date } // Ambil yang paling baru (terakhir diinput)
     }
 
     // Mengambil mood dalam periode tertentu (misal: untuk grafik mingguan)
@@ -130,6 +130,13 @@ object MoodDataManager {
             marahCount = marahCount,
             depresiCount = depresiCount
         )
+    }
+
+    fun getLatestMood(context: Context, userEmail: String): Mood? {
+        return readMoods(context)
+            .filter { it.userEmail == userEmail }
+            // maxByOrNull akan mencari data dengan 'date' (milidetik) paling besar/baru
+            .maxByOrNull { it.date }
     }
 
     // Tambahkan di dalam object MoodDataManager
