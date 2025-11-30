@@ -29,6 +29,8 @@ object Routes {
     const val ActivityDetail = "activityDetail/{id}"
     const val SleepQuality = "sleepQuality"
     const val SleepHistory = "sleepHistory"
+    const val AddAlarm = "add_alarm"
+
 
     fun konseling(userEmail: String) = "konseling/$userEmail"
 

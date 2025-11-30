@@ -54,17 +54,8 @@ object MoodDataManager {
         }
     }
 
-    // Mengambil semua mood milik user tertentu (diurutkan dari yang terbaru)
-    fun getMoods(context: Context, userEmail: String): List<Mood> {
-        return readMoods(context)
-            .filter { it.userEmail == userEmail }
-            .sortedByDescending { it.date }
-    }
-
-    // Mengecek apakah hari ini sudah ada mood yang tersimpan
     fun getTodayMood(context: Context, userEmail: String): Mood? {
         val today = Calendar.getInstance()
-        // Reset jam ke 00:00:00 untuk membandingkan hari
         today.set(Calendar.HOUR_OF_DAY, 0)
         today.set(Calendar.MINUTE, 0)
         today.set(Calendar.SECOND, 0)
@@ -79,7 +70,21 @@ object MoodDataManager {
 
         return readMoods(context)
             .filter { it.userEmail == userEmail }
-            .find { it.date in startOfDay until endOfDay }
+            .filter { it.date in startOfDay until endOfDay } // Ambil semua mood hari ini
+            .maxByOrNull { it.date } // <--- PENTING: Ambil yang paling BARU (Timestamp terbesar)
+    }
+
+    // Mengambil semua mood milik user tertentu (diurutkan dari yang terbaru)
+    fun getMoods(context: Context, userEmail: String): List<Mood> {
+        return readMoods(context)
+            .filter { it.userEmail == userEmail }
+            .sortedByDescending { it.date }
+    }
+
+    fun getLatestMood(context: Context, userEmail: String): Mood? {
+        return readMoods(context)
+            .filter { it.userEmail == userEmail }
+            .maxByOrNull { it.date }
     }
 
     // Mengambil mood dalam periode tertentu (misal: untuk grafik mingguan)
@@ -98,13 +103,16 @@ object MoodDataManager {
             .sortedBy { it.date }
     }
 
-    // Menghitung statistik mood (jumlah gembira, sedih, dll)
+
     fun getMoodStats(context: Context, userEmail: String, days: Int = 7): MoodStats {
         val calendar = Calendar.getInstance()
         calendar.add(Calendar.DAY_OF_MONTH, -days)
         val startDate = calendar.timeInMillis
+        val endDate = System.currentTimeMillis()
 
-        val moods = getMoodsForPeriod(context, userEmail, startDate, System.currentTimeMillis())
+        val moods = readMoods(context)
+            .filter { it.userEmail == userEmail && it.date >= startDate && it.date <= endDate }
+            .sortedBy { it.date }
 
         var gembirCount = 0
         var sedihCount = 0
@@ -122,14 +130,7 @@ object MoodDataManager {
             }
         }
 
-        return MoodStats(
-            totalMoods = moods.size,
-            gembirCount = gembirCount,
-            sedihCount = sedihCount,
-            netralCount = netralCount,
-            marahCount = marahCount,
-            depresiCount = depresiCount
-        )
+        return MoodStats(moods.size, gembirCount, sedihCount, netralCount, marahCount, depresiCount)
     }
 
     // Tambahkan di dalam object MoodDataManager

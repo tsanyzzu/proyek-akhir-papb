@@ -306,6 +306,9 @@ fun NavigationGraph(
         composable("counseling_detail") {
             DoctorDetailScreen(navController = navController)
         }
+        composable(Routes.AddAlarm) {
+            AddAlarmScreen(navController = navController)
+        }
 
 
     }

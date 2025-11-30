@@ -15,17 +15,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.kelompok4.serena.data.Mood
 import com.kelompok4.serena.data.MoodDataManager
 import com.kelompok4.serena.data.MoodTypes
 import com.kelompok4.serena.ui.components.AppButton
 import com.kelompok4.serena.ui.components.ButtonType
 import com.kelompok4.serena.ui.theme.*
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
 
 @Composable
 fun SaveMoodScreen(
@@ -33,9 +33,11 @@ fun SaveMoodScreen(
     userEmail: String
 ) {
     val context = LocalContext.current
-    var selectedMood by remember { mutableStateOf<String?>(null) }
 
-    // Mood options dengan emoji yang lebih besar
+    // PERBAIKAN UX: Inisialisasi dengan GEMBIRA agar tombol tidak mati di awal
+    // dan status visual sinkron dengan status data
+    var selectedMood by remember { mutableStateOf<String?>(MoodTypes.GEMBIRA) }
+
     val moodOptions = listOf(
         MoodTypes.GEMBIRA to "😊",
         MoodTypes.SEDIH to "😢",
@@ -52,7 +54,6 @@ fun SaveMoodScreen(
     ) {
         Spacer(modifier = Modifier.height(60.dp))
 
-        // Title
         Text(
             text = "Bagaimana perasaanmu hari ini?",
             style = AppTypography.H4.bold,
@@ -78,13 +79,9 @@ fun SaveMoodScreen(
                     .padding(vertical = 48.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Large Emoji
+                // Tampilan Emoji (Logic disederhanakan karena selectedMood tidak lagi null di awal)
                 Text(
-                    text = if (selectedMood != null) {
-                        moodOptions.find { it.first == selectedMood }?.second ?: "😊"
-                    } else {
-                        "😊"
-                    },
+                    text = moodOptions.find { it.first == selectedMood }?.second ?: "😊",
                     fontSize = 120.sp,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -106,7 +103,7 @@ fun SaveMoodScreen(
                         MoodTypes.NETRAL -> "Hari yang biasa aja ya? Semoga besok lebih baik!"
                         MoodTypes.MARAH -> "Tarik nafas dulu yuk. Serena siap dengerin kamu."
                         MoodTypes.DEPRESI -> "Kamu nggak sendirian. Serena ada buat kamu."
-                        else -> "Mood kamu lagi oke banget! Yuk lakukan hal-hal yang kamu suka!"
+                        else -> "Pilih mood kamu hari ini."
                     },
                     style = AppTypography.Subtitle2.medium,
                     color = Primary700,
@@ -141,29 +138,31 @@ fun SaveMoodScreen(
             text = "Simpan Mood",
             onClick = {
                 selectedMood?.let { mood ->
+                    // PERBAIKAN: Explicitly set date here to ensure it's correct
                     val newMood = Mood(
                         moodName = mood,
                         moodEmoji = MoodTypes.getMoodEmoji(mood),
-                        userEmail = userEmail
+                        userEmail = userEmail,
+                        date = System.currentTimeMillis()
                     )
 
                     val success = MoodDataManager.addMood(context, newMood)
                     if (success) {
                         Toast.makeText(context, "Mood berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                        // Kembali ke Recap, reset stack
                         navController.navigate("mood_recap/$userEmail") {
                             popUpTo("save_mood/$userEmail") { inclusive = true }
                         }
                     } else {
                         Toast.makeText(context, "Gagal menyimpan mood", Toast.LENGTH_SHORT).show()
                     }
-                } ?: run {
-                    Toast.makeText(context, "Pilih mood terlebih dahulu", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 32.dp),
             buttonType = ButtonType.PRIMARY,
+            // Tombol selalu aktif karena defaultnya sudah terpilih
             enabled = selectedMood != null
         )
 
