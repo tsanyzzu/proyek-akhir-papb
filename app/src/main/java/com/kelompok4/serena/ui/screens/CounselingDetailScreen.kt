@@ -119,7 +119,7 @@ fun DoctorDetailScreen(
                         onClick = { },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D7D5F))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF368743))
                     ) {
                         Icon(imageVector = Icons.Default.Share, contentDescription = "Share", modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
@@ -130,7 +130,7 @@ fun DoctorDetailScreen(
                         onClick = { },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D7D5F))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF368743))
                     ) {
                         Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Save", modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
@@ -181,7 +181,7 @@ fun DoctorDetailScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D7D5F))
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF368743))
                 ) {
                     Text("Reservasi", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }

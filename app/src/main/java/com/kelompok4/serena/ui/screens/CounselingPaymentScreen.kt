@@ -151,7 +151,7 @@ fun PaymentMethodTab(text: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) Color(0xFF2D7D5F) else Color.Transparent,
+        color = if (isSelected) Color(0xFF368743) else Color.Transparent,
         border = androidx.compose.foundation.BorderStroke(1.dp, if (isSelected) Color(0xFF2D7D5F) else Color(0xFFE0E0E0))
     ) {
         Text(text, fontSize = 13.sp, color = if (isSelected) Color.White else Color.Gray, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
@@ -187,7 +187,7 @@ fun BottomPaymentSection() {
                 Text("Total yang harus dibayar", fontSize = 12.sp, color = Color.Gray)
                 Text("Rp0", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
-            Button(onClick = { }, modifier = Modifier.width(140.dp).height(48.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D7D5F))) {
+            Button(onClick = { }, modifier = Modifier.width(140.dp).height(48.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF368743))) {
                 Text("Bayar", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             }
         }

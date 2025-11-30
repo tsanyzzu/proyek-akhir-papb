@@ -1,47 +1,90 @@
 package com.kelompok4.serena.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose. foundation.Image
+import androidx.compose.foundation. background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy. items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
+import androidx.compose.material. icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose. runtime.*
+import androidx.compose. ui.Alignment
+import androidx. compose.ui.Modifier
+import androidx.compose.ui.draw. clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx. compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui. text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose. ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.kelompok4.serena.R
+import com.kelompok4.serena.data.CounselingDataManager
+import com.kelompok4.serena.ui.components.CounselingScheduleCard
+import com. kelompok4.serena. ui.theme.*
 
 @Composable
-fun CounselingScreen(navController: NavHostController) {
+fun CounselingScreen(navController: NavHostController, userEmail: String) {
+    val context = LocalContext.current
+
+    // State untuk menyimpan jadwal konseling
+    var scheduledCounseling by remember { mutableStateOf(listOf<com.kelompok4.serena.data.Counseling>()) }
+
+    // Load data konseling
+    LaunchedEffect(Unit) {
+        scheduledCounseling = CounselingDataManager.getScheduledCounseling(context, userEmail)
+    }
+
     Scaffold(
         topBar = { TopSearchBar() },
+        containerColor = BaseColor
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(Color(0xFFF5F5F5))
         ) {
-            // Tagline Banner
-            TaglineBanner()
+            item {
+                // Tagline Banner
+                TaglineBanner()
+                Spacer(modifier = Modifier. height(16.dp))
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Section Jadwal Konsultasi (hanya tampil jika ada jadwal)
+            if (scheduledCounseling.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Jadwal Konsultasi",
+                        style = AppTypography. H6.bold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                items(scheduledCounseling) { counseling ->
+                    CounselingScheduleCard(
+                        counseling = counseling,
+                        onClick = {
+                            // Navigate ke detail konseling
+                            // navController.navigate("counseling_detail/${counseling.id}")
+                        },
+                        modifier = Modifier. padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier. height(16.dp))
+                }
+            }
 
             // Counselor Recommendations
-            // Kita kirim navController ke sini
-            CounselorSection(navController)
+            item {
+                CounselorSection(navController)
+            }
         }
     }
 }
@@ -74,14 +117,14 @@ fun TopSearchBar() {
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
                         modifier = Modifier.size(20.dp),
-                        tint = Color.Gray
+                        tint = Color. Gray
                     )
                 },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.LightGray,
                     unfocusedBorderColor = Color.LightGray,
-                    cursorColor = Color(0xFF2D7D5F)
+                    cursorColor = Primary500
                 ),
                 singleLine = true
             )
@@ -96,8 +139,8 @@ fun TopSearchBar() {
                 Icon(
                     imageVector = Icons.Default.History,
                     contentDescription = "History",
-                    tint = Color(0xFF2D7D5F),
-                    modifier = Modifier.size(28.dp)
+                    tint = Primary500,
+                    modifier = Modifier. size(28.dp)
                 )
             }
         },
@@ -116,40 +159,30 @@ fun TaglineBanner() {
             .height(120.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF2D7D5F)
+            containerColor = Primary500
         )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(16. dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier. weight(1f)
             ) {
                 Text(
                     text = "#BersamaUntukSemua",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    style = AppTypography.H6.bold,
+                    color = Color. White
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier. height(8.dp))
                 Text(
-                    text = "\"Kesehatan mental adalah hak setiap individu. Dengan dukungan yang tepat, kita bisa tumbuh lebih kuat bersama\"",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp
+                    text = "\"Kesehatan mental adalah hak setiap individu.  Dengan dukungan yang tepat, kita bisa tumbuh lebih kuat bersama\"",
+                    style = AppTypography. Subtitle2.regular,
+                    color = Color. White.copy(alpha = 0.9f)
                 )
             }
-
-            Image(
-                painter = painterResource(id = R.drawable.tanteseksi),
-                contentDescription = "Foto Ahli",
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
-            )
         }
     }
 }
@@ -291,10 +324,4 @@ fun CounselorCard(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun CounselingScreenPreview() {
-    CounselingScreen(navController = rememberNavController())
 }

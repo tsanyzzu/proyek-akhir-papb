@@ -16,7 +16,7 @@ object Routes {
     const val REGISTER = "register"
     const val HOME = "home"
     const val SELF_CARE = "self_care"
-    const val KONSELING = "konseling"
+    const val KONSELING = "konseling/{userEmail}"
     const val PROFIL = "profil/{email}"
     const val MAIN = "main/{email}"
     const val EDIT_VALUE = "edit_value/{email}/{field}"
@@ -31,6 +31,8 @@ object Routes {
     const val SleepHistory = "sleepHistory"
     const val AddAlarm = "add_alarm"
 
+
+    fun konseling(userEmail: String) = "konseling/$userEmail"
 
 }
 
