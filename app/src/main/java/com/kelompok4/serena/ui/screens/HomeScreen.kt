@@ -2,6 +2,7 @@ package com.kelompok4.serena.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -29,6 +31,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.kelompok4.serena.R
 import com.kelompok4.serena.data.*
 import com.kelompok4.serena.ui.navigation.Routes
@@ -159,22 +162,47 @@ fun HeaderSection(
             .background(Primary50)
             .padding(16.dp)
     ) {
-        // --- Bagian Atas: Profil & Notifikasi ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Foto Profil",
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape),
-                tint = Primary500
-            )
+            val profilePhotoUrl by produceState<String?>(initialValue = null, key1 = userEmail) {
+                try {
+                    val u = UserDataManager.getUserByEmail(userEmail)
+                    value = u?.profilePhotoUrl
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    value = null
+                }
+            }
+
+            if (!profilePhotoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = profilePhotoUrl,
+                    contentDescription = "Foto Profil",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.LightGray, CircleShape)
+                        .clickable { navController.navigate("profile/$userEmail") },
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.default_profile),
+                    error = painterResource(id = R.drawable.default_profile)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Foto Profil",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable { navController.navigate("profile/$userEmail") },
+                    tint = Primary500
+                )
+            }
+
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-                // Menentukan nama yang ditampilkan
                 val displayName = when {
                     !fullName.isNullOrBlank() -> fullName
                     userEmail.isNotBlank() -> userEmail.substringBefore("@")
@@ -205,9 +233,7 @@ fun HeaderSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Bagian Konten Utama ---
         if (currentMood != null) {
-            // === KONDISI A: SUDAH ADA MOOD (Tampilan Card Mood Terakhir) ===
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -215,11 +241,9 @@ fun HeaderSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        // Menggunakan "Mood Terakhir" agar lebih akurat dengan data getLatestMood
                         text = "Mood Terakhir Kamu",
                         style = AppTypography.H4.bold
                     )
-                    // Tombol Ganti Mood
                     TextButton(
                         onClick = {
                             navController.navigate("save_mood/$userEmail")
@@ -275,7 +299,6 @@ fun HeaderSection(
                 }
             }
         } else {
-            // === KONDISI B: BELUM ADA MOOD (Tampilan Icon Pilihan) ===
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
