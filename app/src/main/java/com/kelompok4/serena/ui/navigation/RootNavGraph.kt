@@ -1,7 +1,6 @@
 package com.kelompok4.serena.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -10,7 +9,7 @@ import com.kelompok4.serena.ui.screens.*
 
 @Composable
 fun RootNavGraph(
-    navController: NavHostController,
+    navController: androidx.navigation.NavHostController,
     isFirstTime: Boolean,
     isLoggedIn: Boolean
 ) {
@@ -29,7 +28,6 @@ fun RootNavGraph(
                             popUpTo(Routes.SPLASH) { inclusive = true }
                         }
                         else -> {
-                            // Saat sudah login, pastikan kirim email user aktif
                             val email = "current_user@example.com" // nanti ambil dari session
                             navController.navigate("main/$email") {
                                 popUpTo(Routes.SPLASH) { inclusive = true }
@@ -72,6 +70,8 @@ fun RootNavGraph(
             arguments = listOf(navArgument("email") { type = NavType.StringType })
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
+            // MainScreen meng-host NavHost untuk semua screen bottom-nav / main-area,
+            // jadi cukup panggil MainScreen di sini
             MainScreen(userEmail = email)
         }
     }

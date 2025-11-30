@@ -1,13 +1,13 @@
 package com.kelompok4.serena.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,58 +16,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.kelompok4.serena.R
 import com.kelompok4.serena.ui.theme.AppTypography
 import com.kelompok4.serena.ui.theme.Primary500
 import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import android.net.Uri
-import androidx.compose.material3.CircularProgressIndicator
 
 @Composable
 fun ProfileDetailScreen(
     navController: NavController,
     userEmail: String,
-    vm: ProfileViewModel = viewModel()
+    vm: ProfileViewModel = viewModel() // pastikan shared ViewModel scope via navGraph jika ingin benar-benar shared
 ) {
     val context = LocalContext.current
     val user by vm.user.collectAsState()
 
-<<<<<<< Updated upstream
-=======
     // local state untuk dialog edit email
-    var isUpdatingEmail by remember { mutableStateOf(false) }
     var showEditEmailDialog by remember { mutableStateOf(false) }
     var newEmailInput by remember { mutableStateOf("") }
-    var passwordInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") } // untuk reauth jika perlu
+    var isUpdatingEmail by remember { mutableStateOf(false) }
 
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var isUploading by remember { mutableStateOf(false) }
-
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            selectedImageUri = uri
-            isUploading = true
-            vm.uploadProfilePhoto(uri) { success, message ->
-                isUploading = false
-                if (success) {
-                    Toast.makeText(context, "Foto profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
-                    selectedImageUri = null
-                } else {
-                    Toast.makeText(context, message ?: "Gagal upload foto", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
->>>>>>> Stashed changes
     LaunchedEffect(userEmail) {
-        vm.loadUser(context, userEmail)
+        vm.loadUserByEmail(userEmail)
     }
 
     Column(
@@ -77,62 +52,37 @@ fun ProfileDetailScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(8.dp))
-<<<<<<< Updated upstream
-        Image(
-            painter = painterResource(id = user?.profilePictureRes ?: R.drawable.default_profile),
-            contentDescription = "Profile Picture",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape)
-                .clickable { /* aksi ganti foto profil */ }
-        )
-=======
 
         // Avatar
-        val avatarModel: Any? = selectedImageUri ?: user?.profilePhotoUrl
-        if (avatarModel != null && avatarModel.toString().isNotBlank()) {
+        if (!user?.profilePhotoUrl.isNullOrBlank()) {
             AsyncImage(
-                model = avatarModel,
+                model = user?.profilePhotoUrl,
                 contentDescription = "Profile Picture",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
                     .border(1.dp, Color.Gray, CircleShape)
+                    .clickable { /* ganti foto */ }
             )
-
         } else {
             Image(
                 painter = painterResource(id = R.drawable.default_profile),
                 contentDescription = "Profile Picture",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
                     .border(1.dp, Color.Gray, CircleShape)
-                    .clickable { pickImageLauncher.launch("image/*") }
+                    .clickable { /* ganti foto */ }
             )
         }
 
-        if (isUploading) {
-            Spacer(Modifier.height(8.dp))
-            CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
-        }
-
->>>>>>> Stashed changes
         Spacer(Modifier.height(8.dp))
-        Text(
-            text = "Ganti Foto",
-            style = AppTypography.Body1.medium,
-            color = Primary500,
-            modifier = Modifier.clickable {
-                pickImageLauncher.launch("image/*")
-            }
-        )
+        Text(text = "Ganti Foto", style = AppTypography.Body1.medium, color = Primary500)
         Spacer(Modifier.height(20.dp))
 
-        // Card Username
+        // Username card
         Card(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
@@ -148,7 +98,7 @@ fun ProfileDetailScreen(
             }
         }
 
-        // Card Nama Lengkap
+        // Fullname card
         Card(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
@@ -164,7 +114,7 @@ fun ProfileDetailScreen(
             }
         }
 
-        // Card Email
+        // Email card (BISA DIUBAH)
         Card(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
@@ -175,13 +125,87 @@ fun ProfileDetailScreen(
                 ProfileFieldRow(
                     label = "Email",
                     value = user?.email ?: "-",
-                    onEdit = { navController.navigate("edit_value/$userEmail/email") }
+                    onEdit = {
+                        // open dialog untuk edit email
+                        newEmailInput = user?.email ?: ""
+                        passwordInput = ""
+                        showEditEmailDialog = true
+                    }
                 )
             }
         }
     }
+
+    // Dialog Edit Email
+    if (showEditEmailDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!isUpdatingEmail) showEditEmailDialog = false },
+            title = { Text("Ubah Email") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = newEmailInput,
+                        onValueChange = { newEmailInput = it },
+                        label = { Text("Email baru") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = passwordInput,
+                        onValueChange = { passwordInput = it },
+                        label = { Text("Kata sandi (jika diminta)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = PasswordVisualTransformation()
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "Jika Anda mendapat pesan bahwa sesi Anda sudah lama, masukkan kata sandi untuk verifikasi ulang. Jika tidak ingat, silakan login ulang.",
+                        style = AppTypography.Subtitle2.regular,
+                        color = Color.Gray
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !isUpdatingEmail,
+                    onClick = {
+                        val newEmail = newEmailInput.trim()
+                        if (newEmail.isBlank()) {
+                            Toast.makeText(context, "Email baru tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                            return@TextButton
+                        }
+                        isUpdatingEmail = true
+                        vm.updateEmail(newEmail, passwordInput.ifBlank { null }) { success, message ->
+                            isUpdatingEmail = false
+                            if (success) {
+                                Toast.makeText(context, "Email berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                                showEditEmailDialog = false
+                            } else {
+                                Toast.makeText(context, message ?: "Gagal mengubah email", Toast.LENGTH_LONG).show()
+                                // jika message menyebut perlu login ulang, kamu bisa arahkan user untuk logout/login
+                            }
+                        }
+                    }
+                ) {
+                    if (isUpdatingEmail) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text("Simpan")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(enabled = !isUpdatingEmail, onClick = { showEditEmailDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 }
 
+/** Reusable row UI */
 @Composable
 private fun ProfileFieldRow(label: String, value: String, onEdit: () -> Unit) {
     Row(
@@ -191,7 +215,7 @@ private fun ProfileFieldRow(label: String, value: String, onEdit: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, style = AppTypography.Subtitle2.regular)
+            Text(text = label, style = AppTypography.Subtitle2.medium)
             Spacer(Modifier.height(4.dp))
             Text(text = value, style = AppTypography.Body1.medium)
         }

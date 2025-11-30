@@ -15,9 +15,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.navigation.NavGraph.Companion.findStartDestination
 
 @Composable
-fun SuccessProfileScreen(navController: NavController) {
+fun SuccessProfileScreen(navController: NavController, userEmail: String) {
     var start by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(targetValue = if (start) 1f else 0f)
     LaunchedEffect(Unit) { start = true }
@@ -48,17 +49,13 @@ fun SuccessProfileScreen(navController: NavController) {
         Spacer(Modifier.height(32.dp))
         AppButton(
             text = "Kembali Ke Profil",
-<<<<<<< Updated upstream
-            onClick = { navController.popBackStack() },
-=======
             onClick = {
                 // navigate to profile screen with email param
                 navController.navigate("profil/$userEmail") {
-                    popUpTo(0) { inclusive = true }
-                    restoreState = false
+                    popUpTo(0) { inclusive = true }   // Bersihkan seluruh backstack
                 }
+
             },
->>>>>>> Stashed changes
             modifier = Modifier.fillMaxWidth(),
             buttonType = ButtonType.PRIMARY
         )

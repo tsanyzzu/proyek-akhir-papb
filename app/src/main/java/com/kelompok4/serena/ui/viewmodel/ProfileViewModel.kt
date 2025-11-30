@@ -1,40 +1,73 @@
 package com.kelompok4.serena.ui.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
+import com.google.firebase.firestore.FirebaseFirestore
 import com.kelompok4.serena.data.User
-import com.kelompok4.serena.data.UserDataManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-<<<<<<< Updated upstream
-=======
 import kotlinx.coroutines.tasks.await
-import android.net.Uri
-import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.tasks.await
->>>>>>> Stashed changes
 
 class ProfileViewModel : ViewModel() {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
 
-    fun loadUser(context: Context, email: String) {
+    private var currentDocId: String? = null
+
+    /** Load user berdasarkan email (atau gunakan uid jika tersedia) */
+    fun loadUserByEmail(email: String) {
         viewModelScope.launch {
-            _user.value = UserDataManager.getUserByEmail(context, email)
+            try {
+                val querySnapshot = db.collection("users")
+                    .whereEqualTo("email", email)
+                    .limit(1)
+                    .get()
+                    .await()
+
+                if (querySnapshot.documents.isNotEmpty()) {
+                    val doc = querySnapshot.documents[0]
+                    currentDocId = doc.id
+                    _user.value = doc.toObject(User::class.java)
+                } else {
+                    currentDocId = null
+                    _user.value = null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                currentDocId = null
+                _user.value = null
+            }
         }
     }
 
-    fun updateUser(context: Context, updated: User) {
+    /** Load user berdasarkan uid (document id) */
+    fun loadUserByUid(uid: String) {
         viewModelScope.launch {
-            UserDataManager.updateUser(context, updated)
-            _user.value = updated
+            try {
+                val doc = db.collection("users").document(uid).get().await()
+                if (doc.exists()) {
+                    currentDocId = doc.id
+                    _user.value = doc.toObject(User::class.java)
+                } else {
+                    currentDocId = null
+                    _user.value = null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                currentDocId = null
+                _user.value = null
+            }
         }
     }
-<<<<<<< Updated upstream
-=======
 
     /**
      * Update field-field user di Firestore.
@@ -135,53 +168,6 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-    fun uploadProfilePhoto(uri: Uri, onComplete: (Boolean, String?) -> Unit = { _, _ -> }) {
-        viewModelScope.launch {
-            try {
-                val currentUser = auth.currentUser
-                if (currentUser == null) {
-                    onComplete(false, "Tidak ada pengguna yang login.")
-                    return@launch
-                }
-
-                val uid = currentUser.uid
-                val storageRef = FirebaseStorage.getInstance()
-                    .reference
-                    .child("profile_photos/${uid}_${System.currentTimeMillis()}.jpg")
-
-                // upload file
-                storageRef.putFile(uri).await()
-
-                // ambil download url
-                val downloadUrl = storageRef.downloadUrl.await().toString()
-
-                // update photoURL di FirebaseAuth (opsional tapi bagus sinkronisasi)
-                val profileUpdates = UserProfileChangeRequest.Builder()
-                    .setPhotoUri(Uri.parse(downloadUrl))
-                    .build()
-                currentUser.updateProfile(profileUpdates).await()
-
-                // update Firestore user doc
-                val docId = currentDocId ?: uid
-                val finalData = mapOf(
-                    "profilePhotoUrl" to downloadUrl,
-                    "profilePhotoUpdatedAt" to Timestamp.now(),
-                    "updatedAt" to Timestamp.now()
-                )
-                db.collection("users").document(docId).update(finalData).await()
-
-                // reload local state
-                val updatedDoc = db.collection("users").document(docId).get().await()
-                _user.value = updatedDoc.toObject(User::class.java)
-
-                onComplete(true, null)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                onComplete(false, e.message)
-            }
-        }
-    }
-
     // Convenience helpers
     fun updateFullName(newFullName: String, onComplete: (Boolean, String?) -> Unit = { _, _ -> }) {
         updateUserFields(mapOf("fullName" to newFullName), onComplete)
@@ -194,5 +180,4 @@ class ProfileViewModel : ViewModel() {
     fun updateProfilePhotoUrl(newUrl: String, onComplete: (Boolean, String?) -> Unit = { _, _ -> }) {
         updateUserFields(mapOf("profilePhotoUrl" to newUrl, "profilePhotoUpdatedAt" to Timestamp.now()), onComplete)
     }
->>>>>>> Stashed changes
 }

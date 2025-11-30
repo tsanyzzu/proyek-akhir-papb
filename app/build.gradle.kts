@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -9,7 +10,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.proyek_akhir_papb"
+        applicationId = "com.kelompok4.serena"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -30,9 +31,11 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs += "-opt-in=androidx.media3.common.util.UnstableApi"
     }
     buildFeatures {
         compose = true
@@ -40,36 +43,21 @@ android {
 }
 
 dependencies {
-<<<<<<< Updated upstream
-    implementation("com.google.code.gson:gson:2.11.0")
-=======
-    // Media3
-    implementation("androidx.media3:media3-exoplayer:1.2.0")
+    implementation("androidx.media3:media3-exoplayer:1.2.0") // Or latest version
     implementation("androidx.media3:media3-ui:1.2.0")
-
-    // JSON
     implementation("com.google.code.gson:gson:2.11.0")
-
-    // --- FIREBASE SETUP ---
-    // Import the BOM once (Use the newer version you had listed)
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
 
-    // Add specific Firebase products (No version needed because of BOM)
+    // Firebase
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-
-    // *** ADD THIS LINE TO FIX THE ERROR ***
-    implementation("com.google.firebase:firebase-storage")
-
-    // Coroutines for Firebase
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 
-    // Image Loading
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation("io.coil-kt:coil-compose:2.3.0")
-
-    // Android X & Compose
->>>>>>> Stashed changes
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.material.icons.extended)
@@ -83,12 +71,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.ui)
-<<<<<<< Updated upstream
-=======
     implementation(libs.androidx.foundation)
 
-    // Testing
->>>>>>> Stashed changes
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -96,4 +80,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

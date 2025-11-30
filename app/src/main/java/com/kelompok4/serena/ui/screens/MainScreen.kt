@@ -14,14 +14,20 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.kelompok4.serena.ui.navigation.BottomNavItem
 import com.kelompok4.serena.ui.navigation.Routes
 import com.kelompok4.serena.ui.navigation.getAllBottomNavItems
 import com.kelompok4.serena.ui.theme.*
+import com.example.serena.ui.screens.ActivityDetailScreen
+import com.example.serena.ui.screens.ArticleDetailScreen
+import com.example.serena.ui.screens.ArticleListScreen
+import com.example.serena.ui.screens.SelfCareScreen
 
 @Composable
 fun MainScreen(userEmail: String) {
@@ -122,25 +128,168 @@ fun NavigationGraph(
         startDestination = Routes.HOME,
         modifier = modifier
     ) {
-        composable(Routes.HOME) { HomeScreen() }
-        composable(Routes.SELF_CARE) { SelfCareScreen() }
-        composable(Routes.KONSELING) { KonselingScreen() }
+        // Home Screen
+        composable(Routes.HOME) {
+            HomeScreen(navController = navController, userEmail = userEmail)
+        }
 
+        // Self Care Screen
+        composable(Routes.SELF_CARE) {
+            SelfCareScreen(navController = navController)
+        }
+
+        // Counseling Screen
+        composable(Routes.KONSELING) {
+            CounselingScreen(navController = navController)
+        }
+
+        // Profile Screen
         composable("profil/{email}") { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
             ProfileScreen(navController = navController, userEmail = email)
         }
 
+        // Profile Detail Screen
         composable("profile_detail/{email}") { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
             ProfileDetailScreen(navController = navController, userEmail = email)
         }
 
-
+        // Edit Profile Value Screen
         composable("edit_value/{email}/{field}") { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
             val field = backStackEntry.arguments?.getString("field") ?: ""
             EditValueScreen(navController = navController, userEmail = email, field = field)
         }
+
+        // Article Detail Screen
+        composable("articleDetail/{id}") { backStackEntry ->
+            val articleId = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
+            ArticleDetailScreen(navController = navController, articleId = articleId)
+        }
+
+        // Activity Detail Screen
+        composable("activityDetail/{id}") { backStackEntry ->
+            val activityId = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 0
+            ActivityDetailScreen(navController = navController, activityId = activityId)
+        }
+
+        // Sleep Quality Screen
+        composable(Routes.SleepQuality) {
+            SleepQualityScreen(navController = navController)
+        }
+
+        // Sleep History Screen
+        composable(Routes.SleepHistory) {
+            SleepHistoryScreen(navController = navController)
+        }
+
+        // Success Profile Screen
+        composable(
+            route = "success_profile/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            SuccessProfileScreen(navController = navController, userEmail = email)
+        }
+
+        // ========== JOURNAL ROUTES ==========
+
+        // Add Journal Screen (Create new journal)
+        composable(
+            route = "add_journal/{email}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            AddJournalScreen(
+                navController = navController,
+                userEmail = email
+            )
+        }
+
+        // Edit Journal Screen (Edit existing journal)
+        composable(
+            route = "add_journal/{email}/{journalId}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType },
+                navArgument("journalId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val journalId = backStackEntry.arguments?.getString("journalId")
+            AddJournalScreen(
+                navController = navController,
+                userEmail = email,
+                journalId = journalId
+            )
+        }
+
+        // Journal List Screen (Show all journals)
+        composable(
+            route = "journal_list/{email}",
+            arguments = listOf(
+                navArgument("email") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            JournalListScreen(
+                navController = navController,
+                userEmail = email
+            )
+        }
+
+        // Journal Detail Screen (View single journal)
+        composable(
+            route = "journal_detail/{journalId}",
+            arguments = listOf(
+                navArgument("journalId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val journalId = backStackEntry.arguments?.getString("journalId") ?: ""
+            JournalDetailScreen(
+                navController = navController,
+                journalId = journalId
+            )
+        }
+        // Mood Routes
+        composable(
+            route = "save_mood/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            SaveMoodScreen(navController = navController, userEmail = email)
+        }
+
+        composable(
+            route = "mood_recap/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            MoodRecapScreen(navController = navController, userEmail = email)
+        }
+
+        composable(
+            route = "mood_history/{email}",
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            MoodHistoryScreen(navController = navController, userEmail = email)
+        }
+
+        composable(Routes.KONSELING) {
+            CounselingScreen(navController = navController)
+        }
+
+        composable("counseling_payment") {
+            CounselingPaymentScreen(navController = navController)
+        }
+
+        composable("counseling_detail") {
+            DoctorDetailScreen(navController = navController)
+        }
+
+
     }
 }

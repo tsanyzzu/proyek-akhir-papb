@@ -1,5 +1,6 @@
 package com.kelompok4.serena.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,24 +8,26 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kelompok4.serena.R
-import androidx.compose.material3.Button
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import com.kelompok4.serena.data.MoodDataManager
 import com.kelompok4.serena.ui.theme.*
 import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
+import coil.compose.AsyncImage
 
 @Composable
 fun ProfileScreen(
@@ -35,7 +38,10 @@ fun ProfileScreen(
     val context = LocalContext.current
     val user by vm.user.collectAsState()
 
-    LaunchedEffect(userEmail) { vm.loadUser(context, userEmail) }
+    // load user saat email berubah
+    LaunchedEffect(userEmail) {
+        vm.loadUserByEmail(userEmail)
+    }
 
     Column(
         modifier = Modifier
@@ -47,18 +53,31 @@ fun ProfileScreen(
 
         // Header profile
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(id = R.drawable.default_profile),
-                contentDescription = "Profile Picture",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(CircleShape)
-                    .border(1.dp, Color.Gray, CircleShape)
-            )
+            if (!user?.profilePhotoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = user?.profilePhotoUrl,
+                    contentDescription = "Profile Picture",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.Gray, CircleShape)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.default_profile),
+                    contentDescription = "Profile Picture",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(72.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.Gray, CircleShape)
+                )
+            }
+
             Spacer(Modifier.width(12.dp))
             Column {
-                val usernameFromEmail = user?.email?.substringBefore("@") ?: "-"
+                val usernameFromEmail = user?.username ?: user?.email?.substringBefore("@") ?: "-"
                 Text(text = usernameFromEmail, style = AppTypography.H6.bold)
                 Spacer(Modifier.height(4.dp))
                 Text(text = user?.email ?: "-", style = AppTypography.Subtitle2.regular, color = GrayText)
@@ -86,6 +105,7 @@ fun ProfileScreen(
                     subtitle = "Atur informasi pribadi",
                     iconRes = R.drawable.ic_profile_card
                 ) {
+                    // Pastikan route menampung param userEmail
                     navController.navigate("profile_detail/${userEmail}")
                 }
             }
@@ -112,9 +132,36 @@ fun ProfileScreen(
 
         Spacer(Modifier.weight(1f))
 
-        // Tombol keluar
+        // Reset Data Mood
         Button(
-            onClick = { /* Logout flow */ },
+            onClick = {
+                val success = MoodDataManager.clearAllMoods(context)
+                if (success) {
+                    Toast.makeText(context, "Data Mood berhasil direset", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Data Mood sudah kosong", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFFFA000),
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text("Reset Data Mood", style = AppTypography.Body1.medium)
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Tombol keluar (logout)
+        Button(
+            onClick = {
+                // lakukan logout: misalnya FirebaseAuth.getInstance().signOut()
+                // lalu navigasi ke layar login
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),

@@ -141,7 +141,6 @@ fun LoginScreen(
                     text = "Masuk",
                     onClick = {
                         viewModel.onLoginClick(
-                            context = context,
                             onSuccess = { user ->
                                 onNavigateToMain(user.email)
                             },
