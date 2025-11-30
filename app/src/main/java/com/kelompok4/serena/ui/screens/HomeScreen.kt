@@ -73,31 +73,14 @@ fun HomeScreen(navController: NavController, userEmail: String) {
         value = user?.fullName
     }
 
-    if (currentMood != null) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Primary50)
-                .verticalScroll(scrollState)
-        ) {
-            HeaderSection(navController, userEmail, currentMood, fullNameState)
-            HomeContent(navController, userEmail)
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Primary50)
-        ) {
-            HeaderSection(navController, userEmail, null, fullNameState)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(scrollState)
-            ) {
-                HomeContent(navController, userEmail)
-            }
-        }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Primary50)
+            .verticalScroll(scrollState)
+    ) {
+        HeaderSection(navController, userEmail, currentMood, fullNameState)
+        HomeContent(navController, userEmail)
     }
 }
 
@@ -125,7 +108,7 @@ fun HomeContent(navController: NavController, userEmail: String) {
     }
 }
 
-// HeaderSection (DIPERBARUI)
+// HeaderSection (DIPERBAIKI)
 @Composable
 fun HeaderSection(
     navController: NavController,
@@ -178,12 +161,6 @@ fun HeaderSection(
                 )
             }
 
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Foto Profil",
-                modifier = Modifier.size(48.dp).clip(CircleShape),
-                tint = Primary500
-            )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 val displayName = when {
@@ -196,9 +173,17 @@ fun HeaderSection(
             Spacer(modifier = Modifier.weight(1.0f))
             IconButton(
                 onClick = { },
-                modifier = Modifier.size(40.dp).shadow(4.dp, RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.background, RoundedCornerShape(12.dp))
+                modifier = Modifier
+                    .size(40.dp)
+                    .shadow(4.dp, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.background, RoundedCornerShape(12.dp))
             ) {
-                Icon(Icons.Default.Notifications, "Notifikasi", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+                Icon(
+                    Icons.Default.Notifications,
+                    contentDescription = "Notifikasi",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
 
@@ -225,14 +210,14 @@ fun HeaderSection(
                             style = AppTypography.Subtitle2.medium,
                             color = Primary500
                         )
-                    Text(text = "Mood Terakhir Kamu", style = AppTypography.H4.bold)
-                    TextButton(onClick = { navController.navigate("save_mood/$userEmail") }) {
-                        Text("Ganti", style = AppTypography.Subtitle2.medium, color = Primary500)
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Card(
-                    modifier = Modifier.fillMaxWidth().shadow(4.dp, RoundedCornerShape(16.dp)).clickable { navController.navigate("mood_recap/$userEmail") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(4.dp, RoundedCornerShape(16.dp))
+                        .clickable { navController.navigate("mood_recap/$userEmail") },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
@@ -244,7 +229,12 @@ fun HeaderSection(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(text = currentMood.moodName, style = AppTypography.H4.bold, color = Primary700)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(text = getMoodDescription(currentMood.moodName), style = AppTypography.Subtitle2.regular, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
+                            Text(
+                                text = getMoodDescription(currentMood.moodName),
+                                style = AppTypography.Subtitle2.regular,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 20.sp
+                            )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(text = currentMood.moodEmoji, fontSize = 56.sp)
@@ -265,23 +255,20 @@ fun HeaderSection(
                     style = AppTypography.Subtitle2.regular,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Selamat Pagi!", style = AppTypography.H2.bold)
-                Text(text = "Bagaimana perasaanmu hari ini?", style = AppTypography.Subtitle2.regular, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                MoodIcon(Icons.Default.SentimentVerySatisfied, navController, userEmail)
-                MoodIcon(Icons.Default.SentimentSatisfied, navController, userEmail)
-                MoodIcon(Icons.Default.SentimentNeutral, navController, userEmail)
-                MoodIcon(Icons.Default.SentimentDissatisfied, navController, userEmail)
-                MoodIcon(Icons.Default.SentimentVeryDissatisfied, navController, userEmail)
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                    MoodIcon(Icons.Default.SentimentVerySatisfied, navController, userEmail)
+                    MoodIcon(Icons.Default.SentimentSatisfied, navController, userEmail)
+                    MoodIcon(Icons.Default.SentimentNeutral, navController, userEmail)
+                    MoodIcon(Icons.Default.SentimentDissatisfied, navController, userEmail)
+                    MoodIcon(Icons.Default.SentimentVeryDissatisfied, navController, userEmail)
+                }
             }
         }
     }
 }
 
-// MoodIcon (TIDAK BERUBAH)
+// MoodIcon
 @Composable
 fun MoodIcon(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -317,7 +304,7 @@ fun getMoodDescription(moodName: String): String {
     }
 }
 
-// OneOnOneCard (TIDAK BERUBAH)
+// OneOnOneCard
 @Composable
 fun OneOnOneCard(navController: NavController) {
     Card(
@@ -369,7 +356,7 @@ fun OneOnOneCard(navController: NavController) {
     }
 }
 
-// SerenaScoreCard (TIDAK BERUBAH)
+// SerenaScoreCard
 @Composable
 fun SerenaScoreCard() {
     Card(
@@ -431,13 +418,12 @@ fun SerenaScoreCard() {
     }
 }
 
-// JournalSection (TIDAK BERUBAH - hanya auto-refresh mood, jurnal perlu logic serupa jika mau auto-refresh)
+// JournalSection
 @Composable
 fun JournalSection(navController: NavController, userEmail: String) {
     val context = LocalContext.current
     var latestJournal by remember { mutableStateOf<com.kelompok4.serena.data.Journal?>(null) }
 
-    // Logic refresh jurnal (Opsional: bisa ditambahkan LifecycleObserver juga jika perlu)
     LaunchedEffect(Unit) {
         latestJournal = JournalDataManager.getLatestJournal(context, userEmail)
     }
@@ -535,7 +521,7 @@ fun JournalSection(navController: NavController, userEmail: String) {
     }
 }
 
-// SleepQualitySection (TIDAK BERUBAH)
+// SleepQualitySection
 @Composable
 fun SleepQualitySection(navController: NavController) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -623,6 +609,7 @@ fun SectionHeader(title: String, onSeeAllClick: () -> Unit) {
         }
     }
 }
+
 @Preview(showBackground = true, widthDp = 360, heightDp = 1200)
 @Composable
 fun HomeScreenPreview() {
