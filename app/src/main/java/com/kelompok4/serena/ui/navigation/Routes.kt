@@ -29,6 +29,7 @@ object Routes {
     const val ActivityDetail = "activityDetail/{id}"
     const val SleepQuality = "sleepQuality"
     const val SleepHistory = "sleepHistory"
+    const val AddAlarm = "addAlarm"
 
 }
 

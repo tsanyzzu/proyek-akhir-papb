@@ -184,6 +184,11 @@ fun NavigationGraph(
             SleepHistoryScreen(navController = navController)
         }
 
+        // Add Alarm Screen
+        composable(Routes.AddAlarm) {
+            AddAlarmScreen(navController = navController)
+        }
+
         // Success Profile Screen
         composable(
             route = "success_profile/{email}",
