@@ -73,8 +73,6 @@ fun PaymentConfirmationScreen(
                 . padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier. height(16.dp))
-
-            // Total dibayar Section
             Row(
                 modifier = Modifier. fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -108,7 +106,7 @@ fun PaymentConfirmationScreen(
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Placeholder icon - ganti dengan ic_info_circle nanti
+                    // Placeholder icon warning
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = "Warning",
@@ -178,7 +176,7 @@ fun PaymentConfirmationScreen(
                             style = AppTypography.Body1.bold,
                             color = Color.Black
                         )
-                        // Placeholder untuk BCA Logo - ganti dengan ic_bca_logo nanti
+                        // Placeholder untuk BCA Logo
                         Text(
                             text = "BCA",
                             style = AppTypography.H6.bold,

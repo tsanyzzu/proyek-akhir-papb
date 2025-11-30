@@ -32,7 +32,6 @@ fun PaymentSuccessScreen(
     price: Int
 ) {
     val context = LocalContext.current
-    // Simpan data konseling saat screen pertama kali dibuka
     LaunchedEffect(Unit) {
         val counseling = Counseling(
             userEmail = userEmail,
@@ -60,8 +59,6 @@ fun PaymentSuccessScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Spacer(modifier = Modifier. weight(1f))
-
-            // Success Illustration
             Image(
                 painter = painterResource(id = R. drawable.serena_logo),
                 contentDescription = "Success Illustration",
@@ -69,8 +66,6 @@ fun PaymentSuccessScreen(
                     . size(280.dp)
                     .padding(bottom = 32.dp)
             )
-
-            // Success Title
             Text(
                 text = "Selamat! ",
                 style = AppTypography.H3.bold,
@@ -79,8 +74,6 @@ fun PaymentSuccessScreen(
             )
 
             Spacer(modifier = Modifier. height(16.dp))
-
-            // Success Message
             Text(
                 text = "Proses akan segera diproses oleh tim kami.  Terima kasih telah mempercayakan perjalanan kesehatan mentalmu bersama kami! ",
                 style = AppTypography.Body1.regular,
@@ -91,8 +84,6 @@ fun PaymentSuccessScreen(
 
             Spacer(modifier = Modifier.weight(1f))
         }
-
-        // Bottom Button
         AppButton(
             text = "Kembali ke konseling",
             onClick = {

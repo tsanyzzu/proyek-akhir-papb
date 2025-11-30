@@ -18,6 +18,7 @@ import androidx. compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui. text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose. ui.unit.sp
 import androidx.navigation.NavHostController
@@ -191,28 +192,136 @@ fun CounselorSection(navController: NavHostController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16. dp)
+            .padding(horizontal = 16.dp)
     ) {
         Row(
-            modifier = Modifier. fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Rekomendasi Konselor",
-                style = AppTypography.H6.bold,
-                color = Color.Black
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
             )
-            TextButton(onClick = { /* TODO: Lihat semua */ }) {
+            TextButton(onClick = {}) {
                 Text(
                     text = "Lihat semua",
-                    style = AppTypography.Subtitle2.medium,
-                    color = Primary500
+                    color = Color(0xFF2D7D5F)
                 )
             }
         }
 
-        // TODO: Add counselor list here
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Kartu Pertama
+            CounselorCard(
+                name = "Dr. Laura Azzura, S.Psi.",
+                specialty = "Psikolog Klinis",
+                price = "Rp 150.000",
+                isFree = false,
+                imageRes = R.drawable.konselor1,
+                onBookClick = {
+                    // Navigasi ke halaman detail (hardcoded Dr. Laura)
+                    navController.navigate("counseling_detail")
+                }
+            )
+
+            // Kartu Kedua
+            CounselorCard(
+                name = "Dr. Sarah Putri",
+                specialty = "Psikiater",
+                price = "Rp 200.000",
+                isFree = false,
+                imageRes = R.drawable.konselor2,
+                onBookClick = {
+                    // Navigasi ke halaman detail yang sama
+                    navController.navigate("counseling_detail")
+                }
+            )
+        }
     }
 }
 
+@Composable
+fun CounselorCard(
+    name: String,
+    specialty: String,
+    price: String,
+    isFree: Boolean,
+    imageRes: Int,
+    onBookClick: () -> Unit // Callback untuk navigasi
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth() // Agar lebar penuh mengikuti parent
+            .height(100.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Gambar Dokter
+            Image(
+                painter = painterResource(id = imageRes),
+                contentDescription = "Foto Ahli",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = name,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = specialty,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = price,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isFree) Color.Black else Color(0xFF2D7D5F)
+                )
+            }
+
+            // Tombol Reservasi dengan aksi
+            OutlinedButton(
+                onClick = onBookClick, // Menggunakan parameter onClick
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color(0xFF2D7D5F)
+                ),
+                border = ButtonDefaults.outlinedButtonBorder.copy(
+                    width = 1.dp,
+                    brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF2D7D5F))
+                )
+            ) {
+                Text("Reservasi", fontSize = 12.sp)
+            }
+        }
+    }
+}
