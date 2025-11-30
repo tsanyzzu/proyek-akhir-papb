@@ -39,7 +39,8 @@ fun MoodRecapScreen(
 
     // Memuat data mood hari ini
     val todayMood by produceState<Mood?>(initialValue = null, key1 = userEmail) {
-        // Gunakan getLatestMood agar konsisten mengambil data terakhir yang baru diinput
+        // Logika lama: MoodDataManager.getTodayMood -> Beresiko mengambil data lama jika ada bug
+        // Logika baru: Ambil data paling ujung (terbaru)
         value = MoodDataManager.getLatestMood(context, userEmail)
     }
 
