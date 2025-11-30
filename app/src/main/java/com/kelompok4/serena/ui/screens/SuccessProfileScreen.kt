@@ -48,7 +48,17 @@ fun SuccessProfileScreen(navController: NavController) {
         Spacer(Modifier.height(32.dp))
         AppButton(
             text = "Kembali Ke Profil",
+<<<<<<< Updated upstream
             onClick = { navController.popBackStack() },
+=======
+            onClick = {
+                // navigate to profile screen with email param
+                navController.navigate("profil/$userEmail") {
+                    popUpTo(0) { inclusive = true }
+                    restoreState = false
+                }
+            },
+>>>>>>> Stashed changes
             modifier = Modifier.fillMaxWidth(),
             buttonType = ButtonType.PRIMARY
         )

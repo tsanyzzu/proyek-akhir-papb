@@ -40,7 +40,36 @@ android {
 }
 
 dependencies {
+<<<<<<< Updated upstream
     implementation("com.google.code.gson:gson:2.11.0")
+=======
+    // Media3
+    implementation("androidx.media3:media3-exoplayer:1.2.0")
+    implementation("androidx.media3:media3-ui:1.2.0")
+
+    // JSON
+    implementation("com.google.code.gson:gson:2.11.0")
+
+    // --- FIREBASE SETUP ---
+    // Import the BOM once (Use the newer version you had listed)
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+
+    // Add specific Firebase products (No version needed because of BOM)
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+
+    // *** ADD THIS LINE TO FIX THE ERROR ***
+    implementation("com.google.firebase:firebase-storage")
+
+    // Coroutines for Firebase
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    // Image Loading
+    implementation("io.coil-kt:coil-compose:2.3.0")
+
+    // Android X & Compose
+>>>>>>> Stashed changes
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.animation)
     implementation(libs.androidx.material.icons.extended)
@@ -54,6 +83,12 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.ui)
+<<<<<<< Updated upstream
+=======
+    implementation(libs.androidx.foundation)
+
+    // Testing
+>>>>>>> Stashed changes
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

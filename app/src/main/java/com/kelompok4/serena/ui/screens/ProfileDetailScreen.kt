@@ -23,6 +23,10 @@ import com.kelompok4.serena.R
 import com.kelompok4.serena.ui.theme.AppTypography
 import com.kelompok4.serena.ui.theme.Primary500
 import com.kelompok4.serena.ui.viewmodel.ProfileViewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.net.Uri
+import androidx.compose.material3.CircularProgressIndicator
 
 @Composable
 fun ProfileDetailScreen(
@@ -33,6 +37,35 @@ fun ProfileDetailScreen(
     val context = LocalContext.current
     val user by vm.user.collectAsState()
 
+<<<<<<< Updated upstream
+=======
+    // local state untuk dialog edit email
+    var isUpdatingEmail by remember { mutableStateOf(false) }
+    var showEditEmailDialog by remember { mutableStateOf(false) }
+    var newEmailInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
+
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedImageUri = uri
+            isUploading = true
+            vm.uploadProfilePhoto(uri) { success, message ->
+                isUploading = false
+                if (success) {
+                    Toast.makeText(context, "Foto profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                    selectedImageUri = null
+                } else {
+                    Toast.makeText(context, message ?: "Gagal upload foto", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+>>>>>>> Stashed changes
     LaunchedEffect(userEmail) {
         vm.loadUser(context, userEmail)
     }
@@ -44,6 +77,7 @@ fun ProfileDetailScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(8.dp))
+<<<<<<< Updated upstream
         Image(
             painter = painterResource(id = user?.profilePictureRes ?: R.drawable.default_profile),
             contentDescription = "Profile Picture",
@@ -54,8 +88,48 @@ fun ProfileDetailScreen(
                 .border(1.dp, Color.Gray, CircleShape)
                 .clickable { /* aksi ganti foto profil */ }
         )
+=======
+
+        // Avatar
+        val avatarModel: Any? = selectedImageUri ?: user?.profilePhotoUrl
+        if (avatarModel != null && avatarModel.toString().isNotBlank()) {
+            AsyncImage(
+                model = avatarModel,
+                contentDescription = "Profile Picture",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, Color.Gray, CircleShape)
+            )
+
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.default_profile),
+                contentDescription = "Profile Picture",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, Color.Gray, CircleShape)
+                    .clickable { pickImageLauncher.launch("image/*") }
+            )
+        }
+
+        if (isUploading) {
+            Spacer(Modifier.height(8.dp))
+            CircularProgressIndicator(modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
+        }
+
+>>>>>>> Stashed changes
         Spacer(Modifier.height(8.dp))
-        Text(text = "Ganti Foto", style = AppTypography.Body1.medium, color = Primary500)
+        Text(
+            text = "Ganti Foto",
+            style = AppTypography.Body1.medium,
+            color = Primary500,
+            modifier = Modifier.clickable {
+                pickImageLauncher.launch("image/*")
+            }
+        )
         Spacer(Modifier.height(20.dp))
 
         // Card Username

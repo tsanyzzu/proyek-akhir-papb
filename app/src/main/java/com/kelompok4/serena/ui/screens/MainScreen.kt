@@ -64,9 +64,9 @@ fun BottomNavigationBar(navController: NavHostController, userEmail: String) {
                     } else item.route
 
                     navController.navigate(route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = false }
                         launchSingleTop = true
-                        restoreState = true
+                        restoreState = false
                     }
                 },
                 icon = {
