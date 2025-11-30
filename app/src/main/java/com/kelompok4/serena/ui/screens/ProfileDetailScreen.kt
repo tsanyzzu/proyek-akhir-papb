@@ -1,6 +1,9 @@
 package com.kelompok4.serena.ui.screens
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,46 +43,84 @@ fun ProfileDetailScreen(
     var newEmailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") } // untuk reauth jika perlu
     var isUpdatingEmail by remember { mutableStateOf(false) }
+    var isUploading by remember { mutableStateOf(false) }
+
+    // Launcher Galeri
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            isUploading = true
+            vm.uploadProfilePhoto(context, it) { success, message ->
+                isUploading = false
+                if (success) {
+                    Toast.makeText(context, "Foto berhasil diubah!", Toast.LENGTH_SHORT).show()
+                    // Opsional: Refresh user manual jika StateFlow tidak update otomatis (biasanya otomatis karena updateProfilePhotoUrl reload data)
+                } else {
+                    Toast.makeText(context, message ?: "Gagal upload", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
 
     LaunchedEffect(userEmail) {
         vm.loadUserByEmail(userEmail)
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(20.dp))
 
-        // Avatar
-        if (!user?.profilePhotoUrl.isNullOrBlank()) {
-            AsyncImage(
-                model = user?.profilePhotoUrl,
-                contentDescription = "Profile Picture",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .border(1.dp, Color.Gray, CircleShape)
-                    .clickable { /* ganti foto */ }
-            )
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.default_profile),
-                contentDescription = "Profile Picture",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .border(1.dp, Color.Gray, CircleShape)
-                    .clickable { /* ganti foto */ }
-            )
+        Box(contentAlignment = Alignment.Center) {
+            if (!user?.profilePhotoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = user?.profilePhotoUrl,
+                    contentDescription = "Foto Profil",
+                    placeholder = painterResource(id = R.drawable.default_profile),
+                    error = painterResource(id = R.drawable.default_profile),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.LightGray, CircleShape)
+                    // tidak clickable di sini
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.default_profile),
+                    contentDescription = "Foto Profil",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.LightGray, CircleShape)
+                    // tidak clickable di sini
+                )
+            }
+
+            if (isUploading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(40.dp),
+                    color = Primary500,
+                    strokeWidth = 3.dp
+                )
+            }
         }
 
         Spacer(Modifier.height(8.dp))
-        Text(text = "Ganti Foto", style = AppTypography.Body1.medium, color = Primary500)
+
+        Text(
+            text = if (isUploading) "Sedang mengunggah..." else "Ganti Foto",
+            style = AppTypography.Body1.medium,
+            color = if (isUploading) Color.Gray else Primary500,
+            modifier = Modifier.clickable(enabled = !isUploading) {
+                imagePicker.launch("image/*")
+            }
+        )
+
+
         Spacer(Modifier.height(20.dp))
 
         // Username card

@@ -2,6 +2,7 @@ package com.kelompok4.serena.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -29,6 +31,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.kelompok4.serena.R
 import com.kelompok4.serena.data.*
 import com.kelompok4.serena.ui.navigation.Routes
@@ -140,6 +143,41 @@ fun HeaderSection(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val profilePhotoUrl by produceState<String?>(initialValue = null, key1 = userEmail) {
+                try {
+                    val u = UserDataManager.getUserByEmail(userEmail)
+                    value = u?.profilePhotoUrl
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    value = null
+                }
+            }
+
+            if (!profilePhotoUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = profilePhotoUrl,
+                    contentDescription = "Foto Profil",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, Color.LightGray, CircleShape)
+                        .clickable { navController.navigate("profile/$userEmail") },
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.default_profile),
+                    error = painterResource(id = R.drawable.default_profile)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Foto Profil",
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .clickable { navController.navigate("profile/$userEmail") },
+                    tint = Primary500
+                )
+            }
+
             Icon(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Foto Profil",
@@ -173,6 +211,20 @@ fun HeaderSection(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(
+                        text = "Mood Terakhir Kamu",
+                        style = AppTypography.H4.bold
+                    )
+                    TextButton(
+                        onClick = {
+                            navController.navigate("save_mood/$userEmail")
+                        }
+                    ) {
+                        Text(
+                            text = "Ganti",
+                            style = AppTypography.Subtitle2.medium,
+                            color = Primary500
+                        )
                     Text(text = "Mood Terakhir Kamu", style = AppTypography.H4.bold)
                     TextButton(onClick = { navController.navigate("save_mood/$userEmail") }) {
                         Text("Ganti", style = AppTypography.Subtitle2.medium, color = Primary500)
@@ -200,6 +252,19 @@ fun HeaderSection(
                 }
             }
         } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Selamat Pagi!",
+                    style = AppTypography.H2.bold
+                )
+                Text(
+                    text = "Bagaimana perasaanmu hari ini?",
+                    style = AppTypography.Subtitle2.regular,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(text = "Selamat Pagi!", style = AppTypography.H2.bold)
                 Text(text = "Bagaimana perasaanmu hari ini?", style = AppTypography.Subtitle2.regular, color = MaterialTheme.colorScheme.onSurfaceVariant)

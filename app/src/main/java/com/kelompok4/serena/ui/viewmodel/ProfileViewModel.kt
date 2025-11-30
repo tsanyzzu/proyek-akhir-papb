@@ -12,6 +12,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import android.content.Context
+import android.net.Uri
+import com.kelompok4.serena.config.CloudinaryConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 
 class ProfileViewModel : ViewModel() {
 
@@ -167,6 +179,82 @@ class ProfileViewModel : ViewModel() {
             }
         }
     }
+
+    fun uploadProfilePhoto(
+        context: Context,
+        imageUri: Uri,
+        onComplete: (Boolean, String?) -> Unit = { _, _ -> }
+    ) {
+        viewModelScope.launch {
+            try {
+                val docId = currentDocId ?: auth.currentUser?.uid
+                if (docId == null) {
+                    onComplete(false, "User ID tidak tersedia")
+                    return@launch
+                }
+
+                // 1. Baca file di Background Thread (IO)
+                val bytes = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(imageUri)?.use { it.readBytes() }
+                }
+
+                if (bytes == null) {
+                    onComplete(false, "Gagal membaca file gambar")
+                    return@launch
+                }
+
+                // Setup Request Body
+                val client = OkHttpClient()
+                val mediaType = "image/*".toMediaTypeOrNull()
+                val fileBody = bytes.toRequestBody(mediaType)
+                val multipart = MultipartBody.Builder().setType(MultipartBody.FORM)
+                    .addFormDataPart("file", "profile.jpg", fileBody)
+                    .addFormDataPart("upload_preset", CloudinaryConfig.UPLOAD_PRESET)
+                    .build()
+
+                val request = Request.Builder()
+                    .url(CloudinaryConfig.UPLOAD_URL)
+                    .post(multipart)
+                    .build()
+
+                val (isSuccess, responseStr) = withContext(Dispatchers.IO) {
+                    try {
+                        val response = client.newCall(request).execute()
+                        val bodyStr = response.body?.string() // Baca body string di sini
+                        Pair(response.isSuccessful, bodyStr)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Pair(false, null)
+                    }
+                }
+                // ============================================================
+
+                if (!isSuccess) {
+                    onComplete(false, "Upload gagal: $responseStr")
+                    return@launch
+                }
+
+                // Parse JSON (ini ringan, bisa di main thread, tapi amannya cek null)
+                val json = JSONObject(responseStr ?: "")
+                val secureUrl = json.optString("secure_url", null)
+
+                if (secureUrl.isNullOrBlank()) {
+                    onComplete(false, "Tidak mendapatkan URL dari Cloudinary")
+                    return@launch
+                }
+
+                // Simpan ke Firestore
+                updateProfilePhotoUrl(secureUrl) { success, msg ->
+                    if (success) onComplete(true, secureUrl) else onComplete(false, msg)
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onComplete(false, "Error: ${e.localizedMessage}")
+            }
+        }
+    }
+
 
     // Convenience helpers
     fun updateFullName(newFullName: String, onComplete: (Boolean, String?) -> Unit = { _, _ -> }) {
