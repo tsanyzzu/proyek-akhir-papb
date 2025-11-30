@@ -138,18 +138,18 @@ fun SaveMoodScreen(
             text = "Simpan Mood",
             onClick = {
                 selectedMood?.let { mood ->
-                    // Membuat objek Mood baru (otomatis date = System.currentTimeMillis)
+                    // PERBAIKAN: Explicitly set date here to ensure it's correct
                     val newMood = Mood(
                         moodName = mood,
                         moodEmoji = MoodTypes.getMoodEmoji(mood),
-                        userEmail = userEmail
+                        userEmail = userEmail,
+                        date = System.currentTimeMillis()
                     )
 
                     val success = MoodDataManager.addMood(context, newMood)
                     if (success) {
                         Toast.makeText(context, "Mood berhasil disimpan!", Toast.LENGTH_SHORT).show()
-
-                        // Navigasi ke Recap, hapus screen ini dari backstack
+                        // Kembali ke Recap, reset stack
                         navController.navigate("mood_recap/$userEmail") {
                             popUpTo("save_mood/$userEmail") { inclusive = true }
                         }

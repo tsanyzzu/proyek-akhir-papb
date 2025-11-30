@@ -42,19 +42,23 @@ fun HomeScreen(navController: NavController, userEmail: String) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val scrollState = rememberScrollState()
 
-    // 1. STATE UTAMA: Gunakan mutableStateOf
+    // State untuk Mood
     var currentMood by remember { mutableStateOf<Mood?>(null) }
 
-    // 2. LOAD AWAL: Jalankan saat komposisi pertama
+    // 1. Load Awal
     LaunchedEffect(Unit) {
+        println("HomeScreen: Initial Load for $userEmail")
         currentMood = MoodDataManager.getLatestMood(context, userEmail)
     }
 
-    // 3. AUTO-REFRESH: Jalankan setiap kali layar kembali aktif (ON_RESUME)
+    // 2. Auto-Refresh saat Resume (Kembali dari Recap)
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                currentMood = MoodDataManager.getLatestMood(context, userEmail)
+                println("HomeScreen: ON_RESUME triggered. Fetching latest mood...")
+                val freshMood = MoodDataManager.getLatestMood(context, userEmail)
+                println("HomeScreen: Fetched mood: ${freshMood?.moodName} at ${freshMood?.date}")
+                currentMood = freshMood
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -66,7 +70,6 @@ fun HomeScreen(navController: NavController, userEmail: String) {
         value = user?.fullName
     }
 
-    // UI Logic
     if (currentMood != null) {
         Column(
             modifier = Modifier
@@ -84,13 +87,17 @@ fun HomeScreen(navController: NavController, userEmail: String) {
                 .background(Primary50)
         ) {
             HeaderSection(navController, userEmail, null, fullNameState)
-            Column(modifier = Modifier.weight(1f).verticalScroll(scrollState)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(scrollState)
+            ) {
                 HomeContent(navController, userEmail)
             }
         }
     }
 }
-// Komponen Konten Body (TIDAK BERUBAH)
+
 @Composable
 fun HomeContent(navController: NavController, userEmail: String) {
     Column(
