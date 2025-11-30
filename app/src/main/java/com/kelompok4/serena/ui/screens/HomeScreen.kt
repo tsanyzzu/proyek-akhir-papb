@@ -45,46 +45,34 @@ fun HomeScreen(navController: NavController, userEmail: String) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val scrollState = rememberScrollState()
 
-    // Ambil nama user (tetap pakai produceState karena jarang berubah)
-    val fullNameState by produceState<String?>(initialValue = null, key1 = userEmail) {
-        try {
-            val user = UserDataManager.getUserByEmail(userEmail)
-            value = user?.fullName
-        } catch (e: Exception) {
-            e.printStackTrace()
-            value = null
-        }
-    }
-
+    // State untuk Mood
     var currentMood by remember { mutableStateOf<Mood?>(null) }
 
+    // 1. Load Awal
     LaunchedEffect(Unit) {
-        try {
-            currentMood = MoodDataManager.getLatestMood(context, userEmail)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        println("HomeScreen: Initial Load for $userEmail")
+        currentMood = MoodDataManager.getLatestMood(context, userEmail)
     }
-    // Lifecycle Observer: Akan jalan setiap kali layar Home 'RESUME' (muncul kembali)
-    // --- PERBAIKAN 2: Load ulang saat KEMBALI ke halaman ini (Resume) ---
+
+    // 2. Auto-Refresh saat Resume (Kembali dari Recap)
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                try {
-                    currentMood = MoodDataManager.getLatestMood(context, userEmail)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                println("HomeScreen: ON_RESUME triggered. Fetching latest mood...")
+                val freshMood = MoodDataManager.getLatestMood(context, userEmail)
+                println("HomeScreen: Fetched mood: ${freshMood?.moodName} at ${freshMood?.date}")
+                currentMood = freshMood
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-    // ------------------------------------------------
 
-    // Logika UI (Sama seperti sebelumnya)
+    val fullNameState by produceState<String?>(initialValue = null, key1 = userEmail) {
+        val user = UserDataManager.getUserByEmail(userEmail)
+        value = user?.fullName
+    }
+
     if (currentMood != null) {
         Column(
             modifier = Modifier
@@ -92,13 +80,8 @@ fun HomeScreen(navController: NavController, userEmail: String) {
                 .background(Primary50)
                 .verticalScroll(scrollState)
         ) {
-            HeaderSection(
-                navController = navController,
-                userEmail = userEmail,
-                currentMood = currentMood,
-                fullName = fullNameState
-            )
-            HomeContent(navController = navController, userEmail = userEmail)
+            HeaderSection(navController, userEmail, currentMood, fullNameState)
+            HomeContent(navController, userEmail)
         }
     } else {
         Column(
@@ -106,24 +89,18 @@ fun HomeScreen(navController: NavController, userEmail: String) {
                 .fillMaxSize()
                 .background(Primary50)
         ) {
-            HeaderSection(
-                navController = navController,
-                userEmail = userEmail,
-                currentMood = null,
-                fullName = fullNameState
-            )
+            HeaderSection(navController, userEmail, null, fullNameState)
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .verticalScroll(scrollState)
             ) {
-                HomeContent(navController = navController, userEmail = userEmail)
+                HomeContent(navController, userEmail)
             }
         }
     }
 }
 
-// Komponen Konten Body (TIDAK BERUBAH)
 @Composable
 fun HomeContent(navController: NavController, userEmail: String) {
     Column(
@@ -201,6 +178,12 @@ fun HeaderSection(
                 )
             }
 
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = "Foto Profil",
+                modifier = Modifier.size(48.dp).clip(CircleShape),
+                tint = Primary500
+            )
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 val displayName = when {
@@ -208,26 +191,14 @@ fun HeaderSection(
                     userEmail.isNotBlank() -> userEmail.substringBefore("@")
                     else -> "User"
                 }
-
-                Text(
-                    text = "Halo, $displayName",
-                    style = AppTypography.Body1.regular
-                )
+                Text(text = "Halo, $displayName", style = AppTypography.Body1.regular)
             }
             Spacer(modifier = Modifier.weight(1.0f))
             IconButton(
-                onClick = { /* TODO: Aksi notifikasi */ },
-                modifier = Modifier
-                    .size(40.dp)
-                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(12.dp))
-                    .background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(12.dp))
+                onClick = { },
+                modifier = Modifier.size(40.dp).shadow(4.dp, RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.background, RoundedCornerShape(12.dp))
             ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifikasi",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp)
-                )
+                Icon(Icons.Default.Notifications, "Notifikasi", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
             }
         }
 
@@ -254,47 +225,29 @@ fun HeaderSection(
                             style = AppTypography.Subtitle2.medium,
                             color = Primary500
                         )
+                    Text(text = "Mood Terakhir Kamu", style = AppTypography.H4.bold)
+                    TextButton(onClick = { navController.navigate("save_mood/$userEmail") }) {
+                        Text("Ganti", style = AppTypography.Subtitle2.medium, color = Primary500)
                     }
                 }
-
                 Spacer(modifier = Modifier.height(4.dp))
-
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(4.dp, RoundedCornerShape(16.dp))
-                        .clickable {
-                            navController.navigate("mood_recap/$userEmail")
-                        },
+                    modifier = Modifier.fillMaxWidth().shadow(4.dp, RoundedCornerShape(16.dp)).clickable { navController.navigate("mood_recap/$userEmail") },
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
+                        modifier = Modifier.padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = currentMood.moodName,
-                                style = AppTypography.H4.bold,
-                                color = Primary700
-                            )
+                            Text(text = currentMood.moodName, style = AppTypography.H4.bold, color = Primary700)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = getMoodDescription(currentMood.moodName),
-                                style = AppTypography.Subtitle2.regular,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                lineHeight = 20.sp
-                            )
+                            Text(text = getMoodDescription(currentMood.moodName), style = AppTypography.Subtitle2.regular, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
                         }
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = currentMood.moodEmoji,
-                            fontSize = 56.sp
-                        )
+                        Text(text = currentMood.moodEmoji, fontSize = 56.sp)
                     }
                 }
             }
@@ -312,19 +265,17 @@ fun HeaderSection(
                     style = AppTypography.Subtitle2.regular,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "Selamat Pagi!", style = AppTypography.H2.bold)
+                Text(text = "Bagaimana perasaanmu hari ini?", style = AppTypography.Subtitle2.regular, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-            ) {
-                MoodIcon(icon = Icons.Default.SentimentVerySatisfied, navController = navController, userEmail = userEmail)
-                MoodIcon(icon = Icons.Default.SentimentSatisfied, navController = navController, userEmail = userEmail)
-                MoodIcon(icon = Icons.Default.SentimentNeutral, navController = navController, userEmail = userEmail)
-                MoodIcon(icon = Icons.Default.SentimentDissatisfied, navController = navController, userEmail = userEmail)
-                MoodIcon(icon = Icons.Default.SentimentVeryDissatisfied, navController = navController, userEmail = userEmail)
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                MoodIcon(Icons.Default.SentimentVerySatisfied, navController, userEmail)
+                MoodIcon(Icons.Default.SentimentSatisfied, navController, userEmail)
+                MoodIcon(Icons.Default.SentimentNeutral, navController, userEmail)
+                MoodIcon(Icons.Default.SentimentDissatisfied, navController, userEmail)
+                MoodIcon(Icons.Default.SentimentVeryDissatisfied, navController, userEmail)
             }
         }
     }

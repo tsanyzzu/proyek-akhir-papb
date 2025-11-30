@@ -139,10 +139,18 @@ fun NavigationGraph(
         }
 
         // Counseling Screen
-        composable(Routes.KONSELING) {
-            CounselingScreen(navController = navController)
+        composable(
+            route = "konseling/{userEmail}",
+            arguments = listOf(
+                navArgument("userEmail") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userEmail = backStackEntry.arguments?. getString("userEmail") ?: ""
+            CounselingScreen(
+                navController = navController,
+                userEmail = userEmail
+            )
         }
-
         // Profile Screen
         composable("profil/{email}") { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
@@ -278,16 +286,28 @@ fun NavigationGraph(
             MoodHistoryScreen(navController = navController, userEmail = email)
         }
 
-        composable(Routes.KONSELING) {
-            CounselingScreen(navController = navController)
+        composable(
+            route = "konseling/{userEmail}",
+            arguments = listOf(
+                navArgument("userEmail") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userEmail = backStackEntry.arguments?. getString("userEmail") ?: ""
+            CounselingScreen(
+                navController = navController,
+                userEmail = userEmail
+            )
         }
 
-        composable("counseling_payment") {
+                        composable("counseling_payment") {
             CounselingPaymentScreen(navController = navController)
         }
 
         composable("counseling_detail") {
             DoctorDetailScreen(navController = navController)
+        }
+        composable(Routes.AddAlarm) {
+            AddAlarmScreen(navController = navController)
         }
 
 

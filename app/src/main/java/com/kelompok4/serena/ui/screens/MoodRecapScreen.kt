@@ -37,13 +37,11 @@ fun MoodRecapScreen(
 ) {
     val context = LocalContext.current
 
-    // Memuat data mood hari ini
+    // LOAD DATA: Menggunakan getLatestMood agar konsisten dengan Home
     val todayMood by produceState<Mood?>(initialValue = null, key1 = userEmail) {
-        // Gunakan getLatestMood agar konsisten mengambil data terakhir yang baru diinput
         value = MoodDataManager.getLatestMood(context, userEmail)
     }
 
-    // Memuat statistik
     val stats by produceState(initialValue = MoodStats(), key1 = userEmail) {
         value = MoodDataManager.getMoodStats(context, userEmail, 7)
     }
@@ -51,18 +49,11 @@ fun MoodRecapScreen(
     MoodRecapContent(
         todayMood = todayMood,
         stats = stats,
-        // PERBAIKAN NAVIGASI:
-        // Saat tombol Back ditekan, kita paksa kembali ke HOME dan hapus history navigasi sebelumnya
-        // (sehingga user tidak kembali ke form input mood)
         onBackClick = {
-            navController.navigate(Routes.HOME) {
-                // Reset stack sampai ke Home (Start Destination)
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
-                launchSingleTop = true
-                restoreState = true
-            }
+            // PERBAIKAN: Gunakan popBackStack untuk kembali ke Home secara natural.
+            // Karena SaveMoodScreen sudah di-pop sebelumnya, stack di bawah ini pasti Home.
+            // Ini memicu ON_RESUME di Home tanpa memaksa restoreState yang mungkin kadaluarsa.
+            navController.popBackStack(Routes.HOME, inclusive = false)
         },
         onHistoryClick = { navController.navigate("mood_history/$userEmail") },
         onSelfCareClick = {

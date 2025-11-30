@@ -38,11 +38,15 @@ fun MoodHistoryScreen(
     val context = LocalContext.current
     var selectedPeriod by remember { mutableStateOf("Week") }
 
-    val moods = remember(selectedPeriod) {
-        MoodDataManager.getMoods(context, userEmail)
+    // PERBAIKAN: Ganti 'remember' dengan 'produceState'
+    // Ini memastikan data selalu diambil ulang (fresh) setiap kali layar dibuka
+    val moods by produceState<List<Mood>>(initialValue = emptyList(), key1 = userEmail) {
+        // Mengambil semua data mood, diurutkan descending (terbaru paling atas)
+        value = MoodDataManager.getMoods(context, userEmail)
     }
 
-    val stats = remember(selectedPeriod) {
+    // Stats juga perlu di-refresh saat period berubah ATAU saat data moods berubah
+    val stats by produceState(initialValue = MoodStats(), key1 = selectedPeriod, key2 = moods) {
         val days = when (selectedPeriod) {
             "Day" -> 1
             "Week" -> 7
@@ -50,7 +54,7 @@ fun MoodHistoryScreen(
             "Year" -> 365
             else -> 7
         }
-        MoodDataManager.getMoodStats(context, userEmail, days)
+        value = MoodDataManager.getMoodStats(context, userEmail, days)
     }
 
     // Panggil UI Content dan kirim datanya
@@ -317,7 +321,7 @@ fun MoodHistoryContent(
 @Composable
 fun MoodHistoryItem(mood: Mood) {
     val dateStr = remember(mood.date) {
-        val sdf = SimpleDateFormat("EEEE, dd MMM yyyy", Locale("id", "ID"))
+        val sdf = SimpleDateFormat("EEEE, dd MMM yyyy, HH:mm", Locale("id", "ID"))
         sdf.format(Date(mood.date))
     }
 
@@ -374,7 +378,6 @@ fun MoodHistoryItem(mood: Mood) {
 @Composable
 fun MoodHistoryScreenPreview() {
     ProyekakhirpapbTheme {
-        // Data Dummy untuk Preview
         val dummyStats = MoodStats(
             totalMoods = 10,
             gembirCount = 4,
@@ -390,7 +393,6 @@ fun MoodHistoryScreenPreview() {
             Mood(moodName = MoodTypes.NETRAL, moodEmoji = "😐", userEmail = "test", date = System.currentTimeMillis() - 172800000)
         )
 
-        // Menggunakan MoodHistoryContent (Stateless) agar bisa diisi data dummy
         MoodHistoryContent(
             moods = dummyMoods,
             stats = dummyStats,
