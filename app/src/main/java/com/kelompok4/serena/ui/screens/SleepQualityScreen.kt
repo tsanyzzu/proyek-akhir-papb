@@ -1,15 +1,15 @@
 package com.kelompok4.serena.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable // Tambahkan import ini
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,12 +19,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.kelompok4.serena.ui.theme.*
 import com.kelompok4.serena.ui.navigation.Routes
+import com.kelompok4.serena.ui.theme.*
 
+/**
+ * Displays the user's sleep quality dashboard.  This screen shows summary
+ * statistics, charts, history and a healthy alarm section.  Tapping the
+ * add button in the alarm section navigates to [Routes.AddAlarm] where
+ * the user can configure their sleep alarm.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SleepQualityScreen(navController: NavHostController) {
+    // >>> TAMBAHAN: baca jam dari SavedStateHandle
+    val currentBackStackEntry = navController.currentBackStackEntry
+    val savedStateHandle = currentBackStackEntry?.savedStateHandle
+    val sleepTimeText = savedStateHandle?.get<String>("sleepTime") ?: "00.00"
+    val wakeTimeText  = savedStateHandle?.get<String>("wakeTime")  ?: "06.00"
+    // <<< TAMBAHAN
     Scaffold(
         containerColor = Primary50,
         topBar = {
@@ -262,7 +274,7 @@ fun SleepQualityScreen(navController: NavHostController) {
                     text = "Alarm Sehat",
                     style = AppTypography.H5.bold
                 )
-                IconButton(onClick = { /* TODO: handle add alarm */ }) {
+                IconButton(onClick = { navController.navigate(Routes.AddAlarm) }) {
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = "Tambah Alarm",
@@ -309,7 +321,7 @@ fun SleepQualityScreen(navController: NavHostController) {
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "00.00",
+                                text = sleepTimeText,
                                 style = AppTypography.Body1.bold
                             )
                             Text(
@@ -322,7 +334,7 @@ fun SleepQualityScreen(navController: NavHostController) {
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = "06.00",
+                                text = wakeTimeText,
                                 style = AppTypography.Body1.bold
                             )
                             Text(
